@@ -1,94 +1,1197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Screen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Name That PornStar - Alanna Pow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Basic Page Setup */
-        body, html {
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
-            background-color: #000000;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; /* Pushes everything to the bottom */
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #ffffff;
-            overflow: hidden;
         }
 
-        /* Bottom Wrapper: Contains Text, Progress Bar, and Image */
-        .bottom-wrapper {
-            width: 100%;
+        body {
+            background-color: #FFC107;
+            font-family: 'Comic Neue', 'Jua', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
-        /* Loading Text */
-        .loading-text {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        /* حاوية اختيار الشخصية ملاصقة تماماً للجزء العلوي من صندوق الحوار */
+        .character-select-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            bottom: calc(5vh + 145px); 
+            z-index: 5;
+            transition: all 0.3s ease;
+            width: 350px; 
+            height: 280px;
         }
 
-        /* Progress Bar Container */
-        .progress-bar {
-            width: 90%; /* Width relative to screen */
-            max-width: 500px;
-            height: 3px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        /* Animated Progress Fill */
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            background-color: #ffffff;
-            box-shadow: 0 0 10px #ffffff;
-            animation: loadProgress 4s infinite linear;
-        }
-
-        @keyframes loadProgress {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-
-        /* Image Styling */
-        .image-container {
+        /* عناصر التحكم بالتقليب تعتمد على التموضع المطلق لمنع تأثرها بالعرض */
+        .selector-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
-            line-height: 0;
+            height: 100%;
+            position: relative;
         }
 
-        .image-container img {
+        .char-arrow-btn {
+            background: #E65100;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #FFFFFF;
+            box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+            position: absolute;
+            z-index: 10;
+        }
+        .char-arrow-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* تثبيت السهم الأيسر في أقصى اليسار */
+        #prevCharBtn {
+            left: 0px;
+        }
+
+        /* تثبيت السهم الأيمن في أقصى اليمين */
+        #nextCharBtn {
+            right: 0px;
+        }
+
+        /* إرجاع الشخصية بكامل حجمها وعرضها التلقائي كما كانت */
+        .center-character-view {
+            height: 280px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+            display: block;
+        }
+
+        /* حاوية الحوار السفلي مع دعم تأثير الفايد الناعم */
+        .dialog-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
             width: 100%;
             height: auto;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        /* مستطيل الحوار */
+        .dialog-box {
+            width: 350px;
+            height: 150px;
+            background-color: #FF9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: row; 
+            gap: 12px;
+            outline: 2px solid rgba(0,0,0,0.4);
+            padding: 0 16px;
+            position: relative;
+            overflow: visible;
+            margin-bottom: 5vh;
+            cursor: pointer;
+        }
+
+        /* موضع الشخصية الداخلي بعد بدء اللعبة ملاصق للقاع */
+        .character-icon {
+            position: absolute;
+            bottom: 0px;
+            left: -5%;
+            width: auto;
+            height: 250px;
             display: block;
+            object-fit: contain;
+            object-position: bottom;
+            filter: drop-shadow(1px 1px 0 #6B3E00);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* المساحة الفاصلة المخفية والمتحركة */
+        .divider-space {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+            margin-left: 55px;
+            transition: width 0.3s ease, margin-left 0.3s ease;
+        }
+
+        /* إخفاء المساحة الفاصلة أثناء مرحلة اختيار الشخصية */
+        .divider-space.hidden-space {
+            width: 0px;
+            margin-left: 0px;
+        }
+
+        .text-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dialog-message {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            font-family: 'Comic Neue', 'Jua', sans-serif;
+            -webkit-text-stroke: 0.5px #000000;
+            text-align: center;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        /* هامش مخصص لنص التحديد لمنعه من التداخل مع اختيار اللغة بالأسفل */
+        .dialog-message.setup-padding {
+            margin-bottom: 50px; 
+        }
+
+        /* نص التلميح الصغير */
+        .click-hint {
+            position: absolute;
+            bottom: 6px;
+            right: 12px;
+            font-size: 0.8rem; 
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.85);
+            -webkit-text-stroke: 0.3px #000000;
+            animation: blinkArrow 1s step-end infinite;
+            pointer-events: none;
+        }
+
+        @keyframes blinkArrow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* حاوية عناصر الإعداد والتحكم بالأسفل */
+        .setup-controls-container {
+            position: absolute;
+            bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            z-index: 20;
+            width: auto;
+        }
+
+        /* شريط اختيار اللغة المدمج */
+        .language-selector-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #E65100;
+            padding: 4px 14px;
+            border-radius: 8px;
+            border: 1px solid #FFFFFF;
+        }
+
+        .selected-language {
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: 'Comic Neue', monospace;
+            letter-spacing: 1px;
+            min-width: 75px;
+            text-align: center;
+        }
+
+        .arrow-btn {
+            background: transparent;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            color: #FFFFFF;
+            text-shadow: 1px 1px 0 #000;
+            transition: transform 0.1s ease;
+            padding: 0 5px;
+            font-weight: bold;
+        }
+        .arrow-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* زر OK المنفصل تحت شريط اللغة */
+        .lang-ok-button {
+            background-color: #E65100;
+            padding: 4px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #FFFFFF;
+            font-family: 'Comic Neue', 'Jua', sans-serif;
+            font-weight: bold;
+            color: #FFFFFF;
+            font-size: 13px;
+            box-shadow: 1px 2px 3px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease;
+        }
+        .lang-ok-button:active {
+            transform: scale(0.95);
+        }
+
+        /* زر إعادة اللعب */
+        .restart-button {
+            background-color: #E65100;
+            padding: 6px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.1s ease;
+            border: 1px solid #FFFFFF;
+            font-family: 'Comic Neue', 'Jua', sans-serif;
+            font-weight: bold;
+            color: #FFFFFF;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .restart-button:active {
+            transform: scale(0.95);
+            background-color: #BF360C;
+        }
+
+        /* منطقة الخيارات فوق المستطيل مباشرة */
+        .options-corner {
+            position: fixed;
+            bottom: calc(5vh + 150px + 15px);
+            right: max(calc((100% - 350px) / 2), 20px);
+            transform: translateX(calc(50% - 175px));
+            z-index: 25;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: auto;
+            min-width: 150px;
+            align-items: flex-end;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            backdrop-filter: none;
+            border: none;
+        }
+
+        .option-btn {
+            background-color: #E65100;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.1s ease;
+            border: 1px solid #FFFFFF;
+            font-family: 'Comic Neue', 'Jua', sans-serif;
+            font-weight: bold;
+            color: #FFFFFF;
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+            box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+        }
+        .option-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* إشعار اختيار اللغة في الزاوية العلوية */
+        .toast-message {
+            position: fixed;
+            top: 40px; 
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #FFA000;
+            color: #FFFFFF;
+            padding: 8px 20px;
+            z-index: 10001;
+            font-weight: bold;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+            box-shadow: none; 
+            text-align: center; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: toastPopIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        @keyframes toastPopIn {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.7); }
+            70% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1); }
+        }
+
+        .toast-message.fade-out {
+            animation: toastFadeOut 0.2s ease-out forwards;
+        }
+
+        @keyframes toastFadeOut {
+            0% { opacity: 1; transform: translateX(-50%) scale(1); }
+            100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+        }
+
+        /* ================================== */
+        /* ستايلات مشغل الفيديو والمكافآت المدمج مع تأثير الفايد */
+        /* ================================== */
+        #video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10005;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #reward-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            background: url('https://i.ibb.co/H0pYMzc/image.png') center/contain no-repeat;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-bar-container {
+            position: absolute;
+            top: 70px;
+            left: 40px;
+            width: 300px;
+            pointer-events: none;
+            z-index: 10015;
+        }
+
+        .bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .bar-fill {
+            width: 0%;
+            height: 100%;
+            background: #ffffff;
+            transition: width 0.1s linear;
+        }
+
+        /* فئات إخفاء العناصر بأسلوب التلاشي أو الإخفاء التام */
+        .hidden {
+            display: none !important;
+        }
+        
+        .fade-out-element {
+            opacity: 0 !important;
+        }
+
+        .fade-in-element {
+            opacity: 1 !important;
         }
     </style>
 </head>
 <body>
 
-    <div class="bottom-wrapper">
-        <div class="loading-text">PLEASE WAIT... LOADING</div>
-        
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
-        </div>
-
-        <div class="image-container">
-            <img src="Big Tits 3D.gif" alt="Content">
+    <div class="character-select-container" id="characterSelectContainer">
+        <div class="selector-controls">
+            <button class="char-arrow-btn" id="prevCharBtn">◀</button>
+            <img class="center-character-view" id="centerCharacterView" src="" alt="Character Preview">
+            <button class="char-arrow-btn" id="nextCharBtn">▶</button>
         </div>
     </div>
 
+    <div class="dialog-wrapper" id="gameDialogWrapper">
+        <div class="dialog-box" id="mainDialogBox">
+            <div class="divider-space hidden-space" id="dialogDividerSpace"></div>
+            
+            <div class="text-content" id="textContent">
+                </div>
+
+            <div class="setup-controls-container" id="setupControlsContainer">
+                <div class="language-selector-wrapper" id="langSelectorWrapper">
+                    <button class="arrow-btn" id="prevLangBtn">◀</button>
+                    <span class="selected-language" id="currentLangDisplay">English</span>
+                    <button class="arrow-btn" id="nextLangBtn">▶</button>
+                </div>
+                <button class="lang-ok-button" id="confirmLangBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="optionsCorner" class="options-corner hidden"></div>
+
+    <div id="video-container" class="hidden">
+        <video id="reward-video" playsinline muted></video>
+        
+        <div id="loading-overlay" class="video-overlay">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="loading-bar-container">
+            <div class="bar-bg"><div class="bar-fill" id="progress-bar"></div></div>
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // 1. قاعدة بيانات الترجمات والشخصيات المحدثة بالفيديوهات
+        // ========================
+        const translations = {
+            en: {
+                chooseLang: "Select the language and character you want...",
+                welcome: "Oh, hello and welcome to Name That PornStar",
+                guessGame: "From the name of the game, you have to guess the name of the porn star you see...",
+                askIdentity: "So, do you know who I am?",
+                clickHint: "Click to continue...",
+                resultCorrect: "Great, your guess is correct, I will reward you now...",
+                resultWrong: "No.. you made a mistake but it's okay...",
+                learnGame: "Now I will teach you everything about the game...",
+                startLogin: "Let's start on the login page...",
+                inputRules: "You can enter any name and password you like, and it must consist of three letters or more...",
+                limitWarning: "But beware, the game will not accept a name or password with more than eight letters...",
+                goToMainMenu: "Let's move on to the main menu now...",
+                menuContent: "It contains a lot of things, but it's not complicated...",
+                profileBtn: "The Profile button...",
+                profileDetails: "It contains the player's name, their bio, a character icon, and a favorite star...",
+                customizeProfile: "You can customize your profile as you like...",
+                iconSource: "Icons can be purchased, earned from events, or via the gifts button in settings...",
+                chooseFavStar: "Choose your favorite porn star...",
+                leaderboardVisibility: "Your profile will appear to other players on the leaderboard...",
+                toastLang: "Language selected: English"
+            },
+            it: {
+                chooseLang: "Seleziona la lingua e il personaggio che desideri...",
+                welcome: "Oh, ciao e benvenuto a Name That PornStar",
+                guessGame: "Dal nome del gioco, devi indovinare il nome della star del porno che vedi...",
+                askIdentity: "Allora, sai chi sono?",
+                clickHint: "Clicka per continuare...",
+                resultCorrect: "Fantastico, la tua intuizione è corretta, ti ricompenserò ora...",
+                resultWrong: "No.. hai commesso un errore ma va bene lo stesso...",
+                learnGame: "Ora ti insegnerò tutto sul gioco...",
+                startLogin: "Cominciamo dalla pagina di login...",
+                inputRules: "Puedes inserire il nome e la password che preferisci, e devono essere di almeno tre lettere...",
+                limitWarning: "Ma attenzione, il gioco non accetterà un nome o una password con più di otto lettere...",
+                goToMainMenu: "Passiamo ora al menu principale...",
+                menuContent: "Contiene molte cose, ma non è complicato...",
+                profileBtn: "Il pulsante del profilo...",
+                profileDetails: "Contiene il nome del giocatore, la sua bio, un'icona del personaggio e una stella preferita...",
+                customizeProfile: "Puoi personalizzare il tuo profilo come preferisci...",
+                iconSource: "Le icone possono essere acquistate, guadagnate dagli eventi o tramite il pulsante regali nelle impostazioni...",
+                chooseFavStar: "Scegli la tua stella del porno preferita...",
+                leaderboardVisibility: "Il tuo profilo apparirà agli altri giocatori nella classifica...",
+                toastLang: "Lingua selezionata: Italiano"
+            },
+            fr: {
+                chooseLang: "Sélectionnez la langue et le personnage que vous souhaitez...",
+                welcome: "Oh, bonjour et bienvenue à Name That PornStar",
+                guessGame: "D'après le nom du jeu, vous devez deviner le nom de la star du porno que vous voyez...",
+                askIdentity: "Alors, savez-vous qui je suis ?",
+                clickHint: "Cliquez pour continuer...",
+                resultCorrect: "Super, votre supposition est correcte, je vais vous récompenser maintenant...",
+                resultWrong: "Non.. tu as fait une erreur mais c'est pas grave...",
+                learnGame: "Maintenant, je vais tout vous apprendre sur le jeu...",
+                startLogin: "Commençons par la page de connexion...",
+                inputRules: "Vous pouvez entrer le nom et le mot de passe de votre choix, et ils doivent comporter trois lettres ou plus...",
+                limitWarning: "Mais attention, le jeu n'acceptera pas de nom ou de mot de passe de plus de huit lettres...",
+                goToMainMenu: "Passons maintenant au menu principal...",
+                menuContent: "Il contient beaucoup de choses, mais ce n'est pas compliqué...",
+                profileBtn: "Le bouton Profil...",
+                profileDetails: "Il contient le nom du joueur, sa bio, une icône de personnage et une star préférée...",
+                customizeProfile: "Vous pouvez personnaliser votre profil comme vous le souhaitez...",
+                iconSource: "Les icônes peuvent être achetées, gagnées lors d'événements ou via le bouton cadeaux dans les paramètres...",
+                chooseFavStar: "Choisissez votre star du porno préférée...",
+                leaderboardVisibility: "Votre profil apparaîtra aux autres joueurs dans le classement...",
+                toastLang: "Sélection de la langue: Français"
+            },
+            de: {
+                chooseLang: "Wählen Sie die gewünschte Sprache und den gewünschten Charakter...",
+                welcome: "Oh, hallo und willkommen bei Name That PornStar",
+                guessGame: "Anhand des Spielnamens müssen Sie den Namen des Pornostars erraten, den Sie sehen...",
+                askIdentity: "Also, weißt du, wer ich bin?",
+                clickHint: "Klicken Sie zum Fortfahren...",
+                resultCorrect: "Großartig, deine Vermutung ist richtig, ich werde dich jetzt belohnen...",
+                resultWrong: "Nein.. du hast einen Fehler gemacht, aber das ist okay...",
+                learnGame: "Jetzt werde ich dir alles über das Spiel beibringen...",
+                startLogin: "Fangen wir auf der Login-Seite an...",
+                inputRules: "Du kannst einen beliebigen Namen und ein Passwort eingeben, das aus drei oder mehr Buchstaben bestehen muss...",
+                limitWarning: "Aber Vorsicht, das Spiel akzeptiert keine Namen oder Passwörter mit mehr als acht Buchstaben...",
+                goToMainMenu: "Gehen wir nun zum Hauptmenü über...",
+                menuContent: "Es enthält viele Dinge, aber es ist nicht kompliziert...",
+                profileBtn: "Die Profil-Schaltfläche...",
+                profileDetails: "Es enthält den Namen des Spielers, seine Bio, ein Charakter-Icon und einen Lieblingsstar...",
+                customizeProfile: "Du kannst dein Profil nach Belieben anpassen...",
+                iconSource: "Icons können gekauft, durch Events verdient oder über die Geschenk-Schaltfläche in den Einstellungen erhalten werden...",
+                chooseFavStar: "Wähle deinen Lieblings-Pornostar...",
+                leaderboardVisibility: "Dein Profil wird anderen Spielern auf der Bestenliste angezeigt...",
+                toastLang: "Sprache ausgewählt: Deutsch"
+            },
+            es: {
+                chooseLang: "Selecciona el idioma y el personaje que quieras...",
+                welcome: "Oh, hola y bienvenido a Name That PornStar",
+                guessGame: "Por el nombre del juego, tienes que adivinar el nombre de la estrella porno que ves...",
+                askIdentity: "Entonces, ¿sabes quién soy?",
+                clickHint: "Haga clic para continuar...",
+                resultCorrect: "Genial, tu suposición es correcta, te recompensaré ahora...",
+                resultWrong: "No.. cometiste un error pero está bien...",
+                learnGame: "Ahora te enseñaré todo sobre el juego...",
+                startLogin: "Comencemos en la página de inicio de sesión...",
+                inputRules: "Puedes introducir el nombre y la contraseña que quieras, y debe constar de tres letras o más...",
+                limitWarning: "Pero cuidado, el juego no aceptará un nombre o contraseña con más de ocho letras...",
+                goToMainMenu: "Pasemos ahora al menú principal...",
+                menuContent: "Contiene muchas cosas, pero no es complicado...",
+                profileBtn: "El botón de perfil...",
+                profileDetails: "Contiene el nombre del jugador, su biografía, un icono de personaje y una estrella favorita...",
+                customizeProfile: "Puedes personalizar tu perfil como quieras...",
+                iconSource: "Los iconos se pueden comprar, obtener en eventos o a través del botón de regalos en los ajustes...",
+                chooseFavStar: "Elige a tu estrella porno favorita...",
+                leaderboardVisibility: "Tu perfil aparecerá ante los demás jugadores en la tabla de clasificación...",
+                toastLang: "Idioma seleccionado: Español"
+            }
+        };
+
+        const availableLanguages = [
+            { code: 'en', name: 'English' },
+            { code: 'it', name: 'Italiano' },
+            { code: 'fr', name: 'Français' },
+            { code: 'de', name: 'Deutsch' },
+            { code: 'es', name: 'Español' }
+        ];
+
+        const gameCharacters = [
+            { name: "Lena Paul", img: "https://i.ibb.co/LDBc53dP/lena-paul-0bce6cad7dda4cdbe87b0e0df83838c9.png", video: "https://www.dropbox.com/scl/fi/tro0qzlo79x0vshgec2k5/Background-video.mp4?rlkey=09ylr3zzzeedbmm19vbt73evd&st=r1bhj4zf&dl=1" },
+            { name: "Angela White", img: "https://i.ibb.co/1fCkHQpw/angela-white-9b19a3735d958a290d183a68d1182b06.png", video: "https://www.dropbox.com/scl/fi/tro0qzlo79x0vshgec2k5/Background-video.mp4?rlkey=09ylr3zzzeedbmm19vbt73evd&st=r1bhj4zf&dl=1" }, 
+            { name: "Sheridan love", img: "https://i.ibb.co/HD0mHFGR/1780693365700.png", video: "https://www.dropbox.com/scl/fi/tro0qzlo79x0vshgec2k5/Background-video.mp4?rlkey=09ylr3zzzeedbmm19vbt73evd&st=r1bhj4zf&dl=1" },
+            { name: "Lily Lou", img: "https://i.ibb.co/sdwT0Wvp/lily-lou-9b4317336ec93fc2ae4b1a79680289d0.png", video: "https://www.dropbox.com/scl/fi/tro0qzlo79x0vshgec2k5/Background-video.mp4?rlkey=09ylr3zzzeedbmm19vbt73evd&st=r1bhj4zf&dl=1" }
+        ];
+
+        const gameOptionsList = ["Lena Paul", "Angela White", "Sheridan love", "Lily Lou"];
+
+        // ========================
+        // 2. إدارة الحالة والاستجابة
+        // ========================
+        let currentLanguageIndex = 0;
+        let currentLanguageCode = 'en';
+        let currentCharacterIndex = 0;
+
+        let step = 0; 
+        let waitingForNext = false;
+        let answerLocked = false;
+        let languageConfirmed = false;
+        let typewriterTimeout = null;
+        let rewardTimeout = null;
+        let isPlayerCorrect = false; 
+
+        const mainDialogBox = document.getElementById('mainDialogBox');
+        const textContentDiv = document.getElementById('textContent');
+        const prevLangBtn = document.getElementById('prevLangBtn');
+        const nextLangBtn = document.getElementById('nextLangBtn');
+        const confirmLangBtn = document.getElementById('confirmLangBtn');
+        const setupControlsContainer = document.getElementById('setupControlsContainer');
+        const optionsCornerDiv = document.getElementById('optionsCorner');
+        const dialogDividerSpace = document.getElementById('dialogDividerSpace');
+        const gameDialogWrapper = document.getElementById('gameDialogWrapper');
+
+        const characterSelectContainer = document.getElementById('characterSelectContainer');
+        const centerCharacterView = document.getElementById('centerCharacterView');
+        const prevCharBtn = document.getElementById('prevCharBtn');
+        const nextCharBtn = document.getElementById('nextCharBtn');
+
+        // عناصر مشغل الفيديو المدمج
+        const videoContainer = document.getElementById('video-container');
+        const rewardVideo = document.getElementById('reward-video');
+        const progressBar = document.getElementById('progress-bar');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 200);
+            }, 1500);
+        }
+
+        function typeWriter(text, element, callback) {
+            if (typewriterTimeout) clearTimeout(typewriterTimeout);
+            element.innerHTML = "";
+            let i = 0;
+            function typeNext() {
+                if (i < text.length) {
+                    element.innerHTML += text[i];
+                    i++;
+                    typewriterTimeout = setTimeout(typeNext, 30);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            typeNext();
+        }
+
+        function updateLanguageSelector() {
+            const lang = availableLanguages[currentLanguageIndex];
+            currentLanguageCode = lang.code;
+            document.getElementById('currentLangDisplay').textContent = lang.name;
+            
+            if (!languageConfirmed) {
+                renderLanguageChoiceScreen();
+            }
+        }
+
+        function updateCharacterSelector() {
+            centerCharacterView.src = gameCharacters[currentCharacterIndex].img;
+        }
+
+        function renderLanguageChoiceScreen() {
+            textContentDiv.innerHTML = '';
+            const oldHint = mainDialogBox.querySelector('.click-hint');
+            if (oldHint) oldHint.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'dialog-message setup-padding';
+            textContentDiv.appendChild(msgDiv);
+            
+            typeWriter(translations[currentLanguageCode].chooseLang, msgDiv, null);
+        }
+
+        mainDialogBox.addEventListener('click', (e) => {
+            if (!languageConfirmed) return;
+            if (e.target.classList.contains('restart-button')) return;
+            
+            // قفل النقر في الخطوة 3 فقط في حالة الإجابة الصحيحة (لأنها ستنتقل تلقائياً)
+            if (step === 3 && isPlayerCorrect) return; 
+            if (step === 2) return; 
+
+            if (step < 14) {
+                step++;
+                renderStep();
+            }
+        });
+
+        function handleAnswer(selectedName) {
+            if (answerLocked) return;
+            const correct = gameCharacters[currentCharacterIndex].name;
+            isPlayerCorrect = (selectedName === correct);
+            answerLocked = true;
+            step = 3; 
+            optionsCornerDiv.classList.add('hidden');
+            optionsCornerDiv.innerHTML = '';
+            renderStep();
+        }
+
+        function showOptionsInCorner() {
+            optionsCornerDiv.innerHTML = '';
+            const grid = document.createElement('div');
+            grid.className = 'options-grid';
+            gameOptionsList.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = (e) => {
+                    e.stopPropagation(); 
+                    handleAnswer(opt);
+                };
+                grid.appendChild(btn);
+            });
+            optionsCornerDiv.appendChild(grid);
+            optionsCornerDiv.classList.remove('hidden');
+            adjustOptionsCornerPosition();
+        }
+
+        // ========================
+        // 3. نظام تشغيل فيديوهات المكافآت مع تأثيرات Fade
+        // ========================
+        let isVideoPlaying = false;
+        let videoStallTimeout = null;
+
+        function toggleVideoOverlay(show) {
+            if (show) {
+                loadingOverlay.style.visibility = 'visible';
+                loadingOverlay.style.opacity = '1';
+            } else {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.visibility = 'hidden';
+                }, 300);
+            }
+        }
+
+        function syncVideoProgressBar() {
+            if (!rewardVideo || !progressBar) return;
+            if (rewardVideo.duration && isFinite(rewardVideo.duration) && rewardVideo.currentTime) {
+                const percent = (rewardVideo.currentTime / rewardVideo.duration) * 100;
+                progressBar.style.width = percent + "%";
+            }
+            if (!rewardVideo.ended && !videoContainer.classList.contains('hidden')) {
+                requestAnimationFrame(syncVideoProgressBar);
+            } else if (rewardVideo.ended) {
+                progressBar.style.width = "100%";
+            }
+        }
+
+        function startRewardVideoSequence() {
+            gameDialogWrapper.classList.add('fade-out-element');
+            
+            setTimeout(() => {
+                gameDialogWrapper.classList.add('hidden');
+                
+                rewardVideo.src = gameCharacters[currentCharacterIndex].video;
+                videoContainer.classList.remove('hidden');
+                
+                videoContainer.offsetHeight; 
+                videoContainer.classList.add('fade-in-element');
+                progressBar.style.width = "0%";
+                
+                rewardVideo.onplaying = () => {
+                    isVideoPlaying = true;
+                    toggleVideoOverlay(false);
+                    if (videoStallTimeout) clearTimeout(videoStallTimeout);
+                };
+
+                rewardVideo.onwaiting = () => {
+                    isVideoPlaying = false;
+                    toggleVideoOverlay(true);
+                };
+
+                rewardVideo.onstalled = () => {
+                    if (!isVideoPlaying) toggleVideoOverlay(true);
+                };
+
+                rewardVideo.oncanplay = () => {
+                    if (!isVideoPlaying && rewardVideo.paused === false) {
+                        toggleVideoOverlay(false);
+                    }
+                };
+
+                rewardVideo.onended = () => {
+                    toggleVideoOverlay(false);
+                    closeVideoWithFadeEffect();
+                };
+
+                rewardVideo.onerror = () => {
+                    toggleVideoOverlay(false);
+                    closeVideoWithFadeEffect();
+                };
+
+                rewardVideo.load();
+                const playPromise = rewardVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        requestAnimationFrame(syncVideoProgressBar);
+                        toggleVideoOverlay(false);
+                    }).catch(() => {
+                        const bypassAutoplay = () => {
+                            rewardVideo.play().then(() => {
+                                requestAnimationFrame(syncVideoProgressBar);
+                                toggleVideoOverlay(false);
+                            }).catch(() => {});
+                            document.body.removeEventListener('click', bypassAutoplay);
+                            document.body.removeEventListener('touchstart', bypassAutoplay);
+                        };
+                        document.body.addEventListener('click', bypassAutoplay);
+                        document.body.addEventListener('touchstart', bypassAutoplay);
+                        toggleVideoOverlay(true);
+                    });
+                }
+            }, 500);
+        }
+
+        function closeVideoWithFadeEffect() {
+            videoContainer.classList.remove('fade-in-element');
+            
+            setTimeout(() => {
+                rewardVideo.pause();
+                videoContainer.classList.add('hidden');
+                
+                gameDialogWrapper.classList.remove('hidden');
+                gameDialogWrapper.offsetHeight; 
+                gameDialogWrapper.classList.remove('fade-out-element');
+                
+                step = 4;
+                renderStep();
+            }, 500);
+        }
+
+        // ========================
+        // 4. محرك الخطوات والحوارات التعليمية
+        // ========================
+        function renderStep() {
+            if (!languageConfirmed) {
+                renderLanguageChoiceScreen();
+                return;
+            }
+
+            textContentDiv.innerHTML = '';
+            const t = translations[currentLanguageCode];
+
+            const oldHint = mainDialogBox.querySelector('.click-hint');
+            if (oldHint) oldHint.remove();
+
+            if (step !== 2) {
+                optionsCornerDiv.classList.add('hidden');
+                optionsCornerDiv.innerHTML = '';
+            }
+
+            if (rewardTimeout) clearTimeout(rewardTimeout);
+
+            // الخطوة 0: الترحيب
+            if (step === 0) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.welcome, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            } 
+            // الخطوة 1: شرح فكرة التخمين
+            else if (step === 1) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.guessGame, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 2: سؤال الهوية وظهور الأزرار الأربعة
+            else if (step === 2) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'dialog-message';
+                textContentDiv.appendChild(questionDiv);
+                
+                typeWriter(t.askIdentity, questionDiv, () => {
+                    showOptionsInCorner();
+                });
+            }
+            // الخطوة 3: النتيجة (تفعيل المكافأة والفايد فقط إذا كانت الإجابة صحيحة)
+            else if (step === 3) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'dialog-message';
+                textContentDiv.appendChild(resultDiv);
+                
+                const finalResponseText = isPlayerCorrect ? t.resultCorrect : t.resultWrong;
+                typeWriter(finalResponseText, resultDiv, () => {
+                    if (isPlayerCorrect) {
+                        // إجابة صحيحة: تفعيل مشغل الفيديو والانتقال التلقائي بالفايد بعد ثانيتين
+                        rewardTimeout = setTimeout(() => {
+                            startRewardVideoSequence();
+                        }, 2000);
+                    } else {
+                        // إجابة خاطئة: انتظار نقرة عادية من اللاعب للمتابعة للخطوة القادمة
+                        waitingForNext = true;
+                        addClickHint(t.clickHint);
+                    }
+                });
+            }
+            // الخطوة 4: التعليمات العامة
+            else if (step === 4) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.learnGame, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 5: صفحة تسجيل الدخول
+            else if (step === 5) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.startLogin, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 6: قواعد الإدخال
+            else if (step === 6) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.inputRules, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 7: قيود الأحرف
+            else if (step === 7) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.limitWarning, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 8: القائمة الرئيسية
+            else if (step === 8) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.goToMainMenu, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 9: محتويات القائمة
+            else if (step === 9) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.menuContent, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 10: زر الملف الشخصي
+            else if (step === 10) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.profileBtn, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 11: تفاصيل الملف الشخصي
+            else if (step === 11) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.profileDetails, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 12: تخصيص الملف الشخصي
+            else if (step === 12) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.customizeProfile, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 13: متجر الأيقونات والهدايا
+            else if (step === 13) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.iconSource, msgDiv, () => {
+                    waitingForNext = true;
+                    addClickHint(t.clickHint);
+                });
+            }
+            // الخطوة 14: قائمة الصدارة وزر إعادة التشغيل
+            else if (step === 14) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'dialog-message';
+                textContentDiv.appendChild(msgDiv);
+
+                typeWriter(t.leaderboardVisibility, msgDiv, () => {
+                    const restartBtn = document.createElement('div');
+                    restartBtn.className = 'restart-button';
+                    restartBtn.textContent = 'Play Again';
+                    restartBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        resetToSetupMode();
+                    };
+                    textContentDiv.appendChild(restartBtn);
+                });
+            }
+        }
+
+        function addClickHint(text) {
+            const hintSpan = document.createElement('span');
+            hintSpan.className = 'click-hint';
+            hintSpan.textContent = text;
+            mainDialogBox.appendChild(hintSpan);
+        }
+
+        function resetToSetupMode() {
+            step = 0;
+            waitingForNext = false;
+            answerLocked = false;
+            languageConfirmed = false;
+            isPlayerCorrect = false;
+            
+            if (rewardTimeout) clearTimeout(rewardTimeout);
+            rewardVideo.pause();
+            
+            videoContainer.classList.remove('fade-in-element');
+            videoContainer.classList.add('hidden');
+            
+            gameDialogWrapper.classList.remove('hidden');
+            gameDialogWrapper.classList.remove('fade-out-element');
+            
+            const activeCharIcon = mainDialogBox.querySelector('.character-icon');
+            if (activeCharIcon) activeCharIcon.remove();
+            
+            dialogDividerSpace.classList.add('hidden-space');
+            setupControlsContainer.classList.remove('hidden');
+            characterSelectContainer.classList.remove('hidden');
+            
+            updateLanguageSelector();
+            updateCharacterSelector();
+        }
+
+        function adjustOptionsCornerPosition() {
+            const dialogBox = document.querySelector('.dialog-box');
+            if (dialogBox && optionsCornerDiv && !optionsCornerDiv.classList.contains('hidden')) {
+                const rect = dialogBox.getBoundingClientRect();
+                optionsCornerDiv.style.bottom = `${window.innerHeight - rect.top + 10}px`;
+                optionsCornerDiv.style.right = `${window.innerWidth - rect.right}px`;
+                optionsCornerDiv.style.transform = 'translateX(0)';
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (step === 2) adjustOptionsCornerPosition();
+        });
+
+        // ========================
+        // 5. مستمعي الأحداث والتحكم بالتقليب
+        // ========================
+        prevLangBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let newIndex = currentLanguageIndex - 1;
+            if (newIndex < 0) newIndex = availableLanguages.length - 1;
+            currentLanguageIndex = newIndex;
+            updateLanguageSelector();
+        });
+
+        nextLangBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let newIndex = currentLanguageIndex + 1;
+            if (newIndex >= availableLanguages.length) newIndex = 0;
+            currentLanguageIndex = newIndex;
+            updateLanguageSelector();
+        });
+
+        prevCharBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let newIndex = currentCharacterIndex - 1;
+            if (newIndex < 0) newIndex = gameCharacters.length - 1;
+            currentCharacterIndex = newIndex;
+            updateCharacterSelector();
+        });
+
+        nextCharBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let newIndex = currentCharacterIndex + 1;
+            if (newIndex >= gameCharacters.length) newIndex = 0;
+            currentCharacterIndex = newIndex;
+            updateCharacterSelector();
+        });
+
+        confirmLangBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            languageConfirmed = true;
+            
+            characterSelectContainer.classList.add('hidden');
+            setupControlsContainer.classList.add('hidden'); 
+            
+            dialogDividerSpace.classList.remove('hidden-space');
+            
+            const characterImgElement = document.createElement('img');
+            characterImgElement.className = 'character-icon';
+            characterImgElement.src = gameCharacters[currentCharacterIndex].img;
+            characterImgElement.alt = "character";
+            mainDialogBox.insertBefore(characterImgElement, dialogDividerSpace);
+            
+            showToast(translations[currentLanguageCode].toastLang);
+            
+            step = 0;
+            renderStep();
+        });
+
+        (() => {
+            updateLanguageSelector();
+            updateCharacterSelector();
+        })();
+    </script>
 </body>
 </html>
