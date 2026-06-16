@@ -810,7 +810,15 @@
             function deductPlayerMoney(amount) {
                 const current = getPlayerMoney();
                 if (current >= amount) {
-                    setPlayerMoney(current - amount);
+                    const newAmount = current - amount;
+                    localStorage.setItem('playerMoney', newAmount);
+                    // تحديث الصفحة الأم
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.localStorage.setItem('playerMoney', newAmount);
+                        if (window.opener.updateMoneyDisplay) {
+                            window.opener.updateMoneyDisplay();
+                        }
+                    }
                     return true;
                 }
                 return false;
