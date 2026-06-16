@@ -796,13 +796,18 @@
                 return parseInt(localStorage.getItem('playerMoney') || 0);
             }
 
-            function setPlayerMoney(amount) {
-                localStorage.setItem('playerMoney', amount);
-                // تحديث الصفحة الأم إذا كانت موجودة
+            function updateParentMoney(amount) {
                 if (window.opener && !window.opener.closed) {
-                    window.opener.localStorage.setItem('playerMoney', amount);
-                    if (window.opener.updateMoneyDisplay) {
-                        window.opener.updateMoneyDisplay();
+                    try {
+                        window.opener.localStorage.setItem('playerMoney', amount);
+                        if (window.opener.updateMoneyDisplay) {
+                            window.opener.updateMoneyDisplay();
+                        }
+                        if (window.opener.playerMoney !== undefined) {
+                            window.opener.playerMoney = amount;
+                        }
+                    } catch(e) {
+                        console.log("Cannot update parent");
                     }
                 }
             }
@@ -812,13 +817,7 @@
                 if (current >= amount) {
                     const newAmount = current - amount;
                     localStorage.setItem('playerMoney', newAmount);
-                    // تحديث الصفحة الأم
-                    if (window.opener && !window.opener.closed) {
-                        window.opener.localStorage.setItem('playerMoney', newAmount);
-                        if (window.opener.updateMoneyDisplay) {
-                            window.opener.updateMoneyDisplay();
-                        }
-                    }
+                    updateParentMoney(newAmount);
                     return true;
                 }
                 return false;
@@ -1003,11 +1002,12 @@
                             if (playerMoney >= gift.price) {
                                 showPurchaseConfirm(gift.name, gift.price, (confirmed) => {
                                     if (confirmed) {
-                                        deductPlayerMoney(gift.price);
-                                        unlockedStatus[gift.id] = true;
-                                        localStorage.setItem('giftShopUnlocked', JSON.stringify(unlockedStatus));
-                                        renderGifts();
-                                        showToast(t('purchaseSuccess', gift.name));
+                                        if (deductPlayerMoney(gift.price)) {
+                                            unlockedStatus[gift.id] = true;
+                                            localStorage.setItem('giftShopUnlocked', JSON.stringify(unlockedStatus));
+                                            renderGifts();
+                                            showToast(t('purchaseSuccess', gift.name));
+                                        }
                                     }
                                 });
                             } else {
