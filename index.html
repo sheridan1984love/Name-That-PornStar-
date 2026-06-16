@@ -564,6 +564,32 @@
     </div>
 
     <script>
+        // ===== التواصل مع الصفحة الأم عبر postMessage =====
+        function requestDataFromParent() {
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({ type: 'getData' }, '*');
+                } catch(e) {}
+            }
+        }
+
+        // استقبال البيانات من الصفحة الأم
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'sendData') {
+                const correctAnswers = event.data.correctAnswers || 0;
+                localStorage.setItem('totalCorrect', correctAnswers);
+                if (typeof renderGifts === 'function') {
+                    renderGifts();
+                }
+            }
+        });
+
+        // طلب البيانات فوراً
+        setTimeout(requestDataFromParent, 500);
+
+        // طلب البيانات كل 3 ثواني
+        setInterval(requestDataFromParent, 3000);
+
         // ===== شاشة التحميل =====
         const loadingFill = document.getElementById('loadingFill');
         const loadingPercent = document.getElementById('loadingPercent');
@@ -794,39 +820,11 @@
                 if (fallingInterval) clearInterval(fallingInterval);
             });
 
-            // ===== قراءة الاجابات الصحيحة من الصفحة الأم =====
+            // ===== قراءة الاجابات الصحيحة =====
             function getCorrectAnswers() {
-                // محاولة القراءة من الصفحة الأم أولاً
-                if (window.opener && !window.opener.closed) {
-                    try {
-                        const parentCorrect = window.opener.localStorage.getItem('totalCorrect');
-                        if (parentCorrect !== null) {
-                            localStorage.setItem('totalCorrect', parentCorrect);
-                            return parseInt(parentCorrect);
-                        }
-                    } catch(e) {}
-                }
+                requestDataFromParent();
                 return parseInt(localStorage.getItem('totalCorrect') || 0);
             }
-
-            function syncCorrectAnswers() {
-                if (window.opener && !window.opener.closed) {
-                    try {
-                        const parentCorrect = window.opener.localStorage.getItem('totalCorrect');
-                        if (parentCorrect !== null) {
-                            const current = parseInt(localStorage.getItem('totalCorrect') || 0);
-                            const newVal = parseInt(parentCorrect);
-                            if (current !== newVal) {
-                                localStorage.setItem('totalCorrect', parentCorrect);
-                                renderGifts();
-                            }
-                        }
-                    } catch(e) {}
-                }
-            }
-
-            // تحديث كل 2 ثانية
-            setInterval(syncCorrectAnswers, 2000);
 
             // ===== رسالة منبثقة =====
             let currentToast = null;
