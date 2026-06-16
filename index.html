@@ -371,7 +371,7 @@
             transform: translateX(-50%);
             width: 110%;
             height: 110%;
-            background-image: url('poe.png');
+            background-image: url('aaa.png');
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
@@ -426,31 +426,18 @@
             width: 0%;
         }
 
-        .price-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 2px;
-        }
-
-        .price-text {
+        .answers-text {
             font-family: 'Jua', cursive;
             font-size: 1.2rem;
             font-weight: bold;
             color: #fff;
             text-shadow: 2px 2px 0 #000;
+            margin-top: 2px;
         }
 
-        .price-text.unlocked {
+        .answers-text.unlocked {
             color: #00FF00;
             text-shadow: 2px 2px 0 #000;
-        }
-
-        .coin-icon {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
         }
 
         .code-container {
@@ -807,10 +794,39 @@
                 if (fallingInterval) clearInterval(fallingInterval);
             });
 
-            // ===== قراءة الاجابات الصحيحة =====
+            // ===== قراءة الاجابات الصحيحة من الصفحة الأم =====
             function getCorrectAnswers() {
+                // محاولة القراءة من الصفحة الأم أولاً
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        const parentCorrect = window.opener.localStorage.getItem('totalCorrect');
+                        if (parentCorrect !== null) {
+                            localStorage.setItem('totalCorrect', parentCorrect);
+                            return parseInt(parentCorrect);
+                        }
+                    } catch(e) {}
+                }
                 return parseInt(localStorage.getItem('totalCorrect') || 0);
             }
+
+            function syncCorrectAnswers() {
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        const parentCorrect = window.opener.localStorage.getItem('totalCorrect');
+                        if (parentCorrect !== null) {
+                            const current = parseInt(localStorage.getItem('totalCorrect') || 0);
+                            const newVal = parseInt(parentCorrect);
+                            if (current !== newVal) {
+                                localStorage.setItem('totalCorrect', parentCorrect);
+                                renderGifts();
+                            }
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            // تحديث كل 2 ثانية
+            setInterval(syncCorrectAnswers, 2000);
 
             // ===== رسالة منبثقة =====
             let currentToast = null;
@@ -936,27 +952,16 @@
                         progressContainer.appendChild(progressBar);
                         contentDiv.appendChild(progressContainer);
                         
-                        // السعر (الاجابات المطلوبة)
-                        const priceContainer = document.createElement('div');
-                        priceContainer.className = 'price-container';
-                        
-                        const priceSpan = document.createElement('span');
-                        priceSpan.className = 'price-text';
+                        // نص الاجابات المطلوبة (بدون رقم)
+                        const answersText = document.createElement('div');
+                        answersText.className = 'answers-text';
                         if (isReady) {
-                            priceSpan.textContent = t('unlocked');
-                            priceSpan.classList.add('unlocked');
+                            answersText.textContent = t('unlocked');
+                            answersText.classList.add('unlocked');
                         } else {
-                            priceSpan.textContent = `${gift.neededAnswers}`;
+                            answersText.textContent = '';
                         }
-                        
-                        const coinImg = document.createElement('img');
-                        coinImg.src = 'coin.png';
-                        coinImg.alt = 'coin';
-                        coinImg.className = 'coin-icon';
-                        
-                        priceContainer.appendChild(priceSpan);
-                        priceContainer.appendChild(coinImg);
-                        contentDiv.appendChild(priceContainer);
+                        contentDiv.appendChild(answersText);
                         rectDiv.appendChild(contentDiv);
                         
                         rectDiv.onclick = (e) => {
