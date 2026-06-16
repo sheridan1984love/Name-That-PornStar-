@@ -371,7 +371,7 @@
             transform: translateX(-50%);
             width: 110%;
             height: 110%;
-            background-image: url('aaa.png');
+            background-image: url('poe.png');
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
@@ -390,28 +390,66 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 3px;
+            padding: 5px;
             z-index: 9;
+        }
+
+        .progress-container {
+            width: 90%;
+            margin: 2px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            margin-bottom: 2px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B00, #FFD700);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
         }
 
         .price-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 5px;
+            margin-top: 2px;
         }
 
         .price-text {
             font-family: 'Jua', cursive;
-            font-size: 1.8rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #fff;
             text-shadow: 2px 2px 0 #000;
         }
 
+        .price-text.unlocked {
+            color: #00FF00;
+            text-shadow: 2px 2px 0 #000;
+        }
+
         .coin-icon {
-            width: 28px;
-            height: 28px;
+            width: 20px;
+            height: 20px;
             object-fit: contain;
         }
 
@@ -539,13 +577,6 @@
     </div>
 
     <script>
-        // ===== قراءة العملات من رابط الصفحة =====
-        const urlParams = new URLSearchParams(window.location.search);
-        const moneyFromUrl = urlParams.get('money');
-        if (moneyFromUrl !== null && !isNaN(moneyFromUrl)) {
-            localStorage.setItem('playerMoney', parseInt(moneyFromUrl));
-        }
-
         // ===== شاشة التحميل =====
         const loadingFill = document.getElementById('loadingFill');
         const loadingPercent = document.getElementById('loadingPercent');
@@ -660,67 +691,52 @@
                 en: {
                     title: "Gift Shop",
                     limitedText: "Limited for days only",
-                    purchaseTitle: "Purchase Icon",
-                    purchaseConfirm: (name, price, money) => `Buy ${name} for ${price} Money?\n\nYou have ${money} Money.`,
-                    purchaseSuccess: (name) => `✅ ${name} purchased successfully!`,
-                    notEnoughMoney: (price) => `❌ Not enough Money! Need ${price} Money.`,
+                    correctAnswers: "Correct Answers",
+                    unlocked: "Unlocked!",
                     copySuccess: (code) => `✅ Code copied: ${code}`,
                     copyFailed: "❌ Failed to copy",
                     iconCode: "Icon code:",
-                    yes: "Yes",
-                    no: "No"
+                    needMore: (needed) => `Need ${needed} more correct answers!`
                 },
                 es: {
                     title: "Tienda de Regalos",
                     limitedText: "Limitado solo por días",
-                    purchaseTitle: "Comprar Icono",
-                    purchaseConfirm: (name, price, money) => `¿Comprar ${name} por ${price} Monedas?\n\nTienes ${money} Monedas.`,
-                    purchaseSuccess: (name) => `✅ ¡${name} comprado exitosamente!`,
-                    notEnoughMoney: (price) => `❌ ¡No hay suficientes Monedas! Necesitas ${price} Monedas.`,
+                    correctAnswers: "Respuestas Correctas",
+                    unlocked: "¡Desbloqueado!",
                     copySuccess: (code) => `✅ Código copiado: ${code}`,
                     copyFailed: "❌ Error al copiar",
                     iconCode: "Código del icono:",
-                    yes: "Sí",
-                    no: "No"
+                    needMore: (needed) => `¡Necesitas ${needed} respuestas correctas más!`
                 },
                 fr: {
                     title: "Boutique de Cadeaux",
                     limitedText: "Limité pour quelques jours seulement",
-                    purchaseTitle: "Acheter Icône",
-                    purchaseConfirm: (name, price, money) => `Acheter ${name} pour ${price} Pièces?\n\nVous avez ${money} Pièces.`,
-                    purchaseSuccess: (name) => `✅ ${name} acheté avec succès!`,
-                    notEnoughMoney: (price) => `❌ Pas assez de Pièces! Besoin de ${price} Pièces.`,
+                    correctAnswers: "Bonnes Réponses",
+                    unlocked: "Débloqué!",
                     copySuccess: (code) => `✅ Code copié: ${code}`,
                     copyFailed: "❌ Échec de la copie",
                     iconCode: "Code d'icône:",
-                    yes: "Oui",
-                    no: "Non"
+                    needMore: (needed) => `Besoin de ${needed} bonnes réponses de plus!`
                 },
                 it: {
                     title: "Negozio Regali",
                     limitedText: "Limitato solo per giorni",
-                    purchaseTitle: "Acquista Icona",
-                    purchaseConfirm: (name, price, money) => `Acquistare ${name} per ${price} Monete?\n\nHai ${money} Monete.`,
-                    purchaseSuccess: (name) => `✅ ${name} acquistato con successo!`,
-                    notEnoughMoney: (price) => `❌ Monete insufficienti! Servono ${price} Monete.`,
+                    correctAnswers: "Risposte Corrette",
+                    unlocked: "Sbloccato!",
                     copySuccess: (code) => `✅ Codice copiato: ${code}`,
                     copyFailed: "❌ Copia fallita",
                     iconCode: "Codice icona:",
-                    yes: "Sì",
-                    no: "No"
+                    needMore: (needed) => `Servono ${needed} risposte corrette in più!`
                 },
                 de: {
                     title: "Geschenkeladen",
                     limitedText: "Nur für wenige Tage limitiert",
-                    purchaseTitle: "Icon Kaufen",
-                    purchaseConfirm: (name, price, money) => `${name} für ${price} Münzen kaufen?\n\nDu hast ${money} Münzen.`,
-                    purchaseSuccess: (name) => `✅ ${name} erfolgreich gekauft!`,
-                    notEnoughMoney: (price) => `❌ Nicht genug Münzen! Benötigt ${price} Münzen.`,
+                    correctAnswers: "Richtige Antworten",
+                    unlocked: "Freigeschaltet!",
                     copySuccess: (code) => `✅ Code kopiert: ${code}`,
                     copyFailed: "❌ Kopieren fehlgeschlagen",
                     iconCode: "Icon-Code:",
-                    yes: "Ja",
-                    no: "Nein"
+                    needMore: (needed) => `Brauche ${needed} weitere richtige Antworten!`
                 }
             };
 
@@ -791,36 +807,9 @@
                 if (fallingInterval) clearInterval(fallingInterval);
             });
 
-            // ===== ربط العملات =====
-            function getPlayerMoney() {
-                return parseInt(localStorage.getItem('playerMoney') || 0);
-            }
-
-            function updateParentMoney(amount) {
-                if (window.opener && !window.opener.closed) {
-                    try {
-                        window.opener.localStorage.setItem('playerMoney', amount);
-                        if (window.opener.updateMoneyDisplay) {
-                            window.opener.updateMoneyDisplay();
-                        }
-                        if (window.opener.playerMoney !== undefined) {
-                            window.opener.playerMoney = amount;
-                        }
-                    } catch(e) {
-                        console.log("Cannot update parent");
-                    }
-                }
-            }
-
-            function deductPlayerMoney(amount) {
-                const current = getPlayerMoney();
-                if (current >= amount) {
-                    const newAmount = current - amount;
-                    localStorage.setItem('playerMoney', newAmount);
-                    updateParentMoney(newAmount);
-                    return true;
-                }
-                return false;
+            // ===== قراءة الاجابات الصحيحة =====
+            function getCorrectAnswers() {
+                return parseInt(localStorage.getItem('totalCorrect') || 0);
             }
 
             // ===== رسالة منبثقة =====
@@ -862,70 +851,6 @@
                 }, 2000);
             }
 
-            // ===== نافذة تأكيد الشراء =====
-            function showPurchaseConfirm(giftName, price, onConfirm) {
-                let confirmModal = document.getElementById('purchaseConfirmModal');
-                if (!confirmModal) {
-                    confirmModal = document.createElement('div');
-                    confirmModal.id = 'purchaseConfirmModal';
-                    confirmModal.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0,0,0,0.7);
-                        z-index: 4000;
-                        display: none;
-                        align-items: center;
-                        justify-content: center;
-                        backdrop-filter: blur(5px);
-                    `;
-                    confirmModal.innerHTML = `
-                        <div style="background: white; width: 85%; max-width: 300px; border-radius: 25px; padding: 25px 20px; text-align: center;">
-                            <div id="purchaseConfirmTitle" style="font-family: 'Jua', cursive; font-size: 1.2rem; color: #FF8F00; margin-bottom: 15px;">Purchase Icon</div>
-                            <div id="purchaseConfirmMessage" style="font-size: 14px; color: #333; margin-bottom: 20px;"></div>
-                            <div style="display: flex; gap: 15px; justify-content: center;">
-                                <button id="purchaseConfirmYes" style="background-color: #00FF00; color: black; border: 2px solid #000; padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1;">Yes</button>
-                                <button id="purchaseConfirmNo" style="background-color: #FF5252; color: white; border: 2px solid #000; padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1;">No</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(confirmModal);
-                    
-                    document.getElementById('purchaseConfirmYes').onclick = () => {
-                        confirmModal.style.display = 'none';
-                        if (window.pendingConfirm) {
-                            window.pendingConfirm(true);
-                            window.pendingConfirm = null;
-                        }
-                    };
-                    document.getElementById('purchaseConfirmNo').onclick = () => {
-                        confirmModal.style.display = 'none';
-                        if (window.pendingConfirm) {
-                            window.pendingConfirm(false);
-                            window.pendingConfirm = null;
-                        }
-                    };
-                }
-                
-                const titleEl = document.getElementById('purchaseConfirmTitle');
-                const messageEl = document.getElementById('purchaseConfirmMessage');
-                const playerMoney = getPlayerMoney();
-                
-                titleEl.textContent = t('purchaseTitle');
-                messageEl.innerHTML = t('purchaseConfirm', giftName, price, playerMoney).replace(/\n/g, '<br>');
-                
-                const yesBtn = document.getElementById('purchaseConfirmYes');
-                const noBtn = document.getElementById('purchaseConfirmNo');
-                yesBtn.textContent = t('yes');
-                noBtn.textContent = t('no');
-                
-                confirmModal.style.display = 'flex';
-                
-                window.pendingConfirm = onConfirm;
-            }
-
             // ===== وظيفة نسخ النص =====
             function copyToClipboard(text) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -935,17 +860,17 @@
                 });
             }
 
-            // بيانات الهدايا
+            // بيانات الهدايا مع عدد الاجابات المطلوبة
             const giftsData = [
-                { id: 1, squareImg: "https://i.ibb.co/5gR875vF/1.jpg", name: "Golden Pack", price: 10, iconCode: "GIFT-10-GOLD" },
-                { id: 2, squareImg: "https://i.ibb.co/5XVh4BhP/eb4f93f68e0a4122a512290d2833e84c.gif", name: "Diamond Pack", price: 20, iconCode: "GIFT-20-DIAMOND" },
-                { id: 3, squareImg: "https://i.ibb.co/f8x3zYM/Ad.png", name: "Silver Pack", price: 30, iconCode: "GIFT-30-SILVER" },
-                { id: 4, squareImg: "https://i.ibb.co/0RD5V0SD/August-taylor-8.jpg", name: "Premium Pack", price: 40, iconCode: "GIFT-40-PREMIUM" },
-                { id: 5, squareImg: "https://i.ibb.co/HpRGGtgy/Brittany-Elizabeth-nude-190.jpg", name: "Exclusive Pack", price: 50, iconCode: "GIFT-50-EXCLUSIVE" },
-                { id: 6, squareImg: "https://i.ibb.co/Z6njCKdL/August-taylor-17.jpg", name: "Rare Pack", price: 60, iconCode: "GIFT-60-RARE" },
-                { id: 7, squareImg: "https://i.ibb.co/fcn74z9/Image-2026-05-04-13-01-14.jpg", name: "Legendary Pack", price: 75, iconCode: "GIFT-75-LEGEND" },
-                { id: 8, squareImg: "https://i.ibb.co/9Hr2c643/05-26-59-506-512.gif", name: "Mystery Pack", price: 100, iconCode: "GIFT-100-MYSTERY" },
-                { id: 9, squareImg: "aa.png", name: "Mysty Pack", price: 300, iconCode: "GIFTYSTERY" }
+                { id: 1, squareImg: "https://i.ibb.co/5gR875vF/1.jpg", name: "Golden Pack", neededAnswers: 10, iconCode: "GIFT-10-GOLD" },
+                { id: 2, squareImg: "https://i.ibb.co/5XVh4BhP/eb4f93f68e0a4122a512290d2833e84c.gif", name: "Diamond Pack", neededAnswers: 20, iconCode: "GIFT-20-DIAMOND" },
+                { id: 3, squareImg: "https://i.ibb.co/f8x3zYM/Ad.png", name: "Silver Pack", neededAnswers: 30, iconCode: "GIFT-30-SILVER" },
+                { id: 4, squareImg: "https://i.ibb.co/0RD5V0SD/August-taylor-8.jpg", name: "Premium Pack", neededAnswers: 40, iconCode: "GIFT-40-PREMIUM" },
+                { id: 5, squareImg: "https://i.ibb.co/HpRGGtgy/Brittany-Elizabeth-nude-190.jpg", name: "Exclusive Pack", neededAnswers: 50, iconCode: "GIFT-50-EXCLUSIVE" },
+                { id: 6, squareImg: "https://i.ibb.co/Z6njCKdL/August-taylor-17.jpg", name: "Rare Pack", neededAnswers: 60, iconCode: "GIFT-60-RARE" },
+                { id: 7, squareImg: "https://i.ibb.co/fcn74z9/Image-2026-05-04-13-01-14.jpg", name: "Legendary Pack", neededAnswers: 75, iconCode: "GIFT-75-LEGEND" },
+                { id: 8, squareImg: "https://i.ibb.co/9Hr2c643/05-26-59-506-512.gif", name: "Mystery Pack", neededAnswers: 100, iconCode: "GIFT-100-MYSTERY" },
+                { id: 9, squareImg: "aa.png", name: "Mysty Pack", neededAnswers: 300, iconCode: "GIFTYSTERY" }
             ];
 
             let unlockedStatus = JSON.parse(localStorage.getItem('giftShopUnlocked') || '{}');
@@ -955,8 +880,12 @@
                 if (!container) return;
                 container.innerHTML = '';
                 
+                const correctAnswers = getCorrectAnswers();
+                
                 giftsData.forEach(gift => {
                     const isUnlocked = unlockedStatus[gift.id] === true;
+                    const progress = Math.min(100, (correctAnswers / gift.neededAnswers) * 100);
+                    const isReady = correctAnswers >= gift.neededAnswers;
                     
                     const giftDiv = document.createElement('div');
                     giftDiv.className = 'gift-item';
@@ -979,12 +908,46 @@
                     contentDiv.className = 'rectangle-content';
                     
                     if (!isUnlocked) {
+                        // شريط التقدم
+                        const progressContainer = document.createElement('div');
+                        progressContainer.className = 'progress-container';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'progress-label';
+                        
+                        const labelText = document.createElement('span');
+                        labelText.textContent = t('correctAnswers');
+                        
+                        const labelCount = document.createElement('span');
+                        labelCount.textContent = `${correctAnswers} / ${gift.neededAnswers}`;
+                        
+                        label.appendChild(labelText);
+                        label.appendChild(labelCount);
+                        progressContainer.appendChild(label);
+                        
+                        const progressBar = document.createElement('div');
+                        progressBar.className = 'progress-bar';
+                        
+                        const progressFill = document.createElement('div');
+                        progressFill.className = 'progress-fill';
+                        progressFill.style.width = progress + '%';
+                        
+                        progressBar.appendChild(progressFill);
+                        progressContainer.appendChild(progressBar);
+                        contentDiv.appendChild(progressContainer);
+                        
+                        // السعر (الاجابات المطلوبة)
                         const priceContainer = document.createElement('div');
                         priceContainer.className = 'price-container';
                         
                         const priceSpan = document.createElement('span');
                         priceSpan.className = 'price-text';
-                        priceSpan.textContent = `${gift.price}`;
+                        if (isReady) {
+                            priceSpan.textContent = t('unlocked');
+                            priceSpan.classList.add('unlocked');
+                        } else {
+                            priceSpan.textContent = `${gift.neededAnswers}`;
+                        }
                         
                         const coinImg = document.createElement('img');
                         coinImg.src = 'coin.png';
@@ -998,20 +961,14 @@
                         
                         rectDiv.onclick = (e) => {
                             e.stopPropagation();
-                            const playerMoney = getPlayerMoney();
-                            if (playerMoney >= gift.price) {
-                                showPurchaseConfirm(gift.name, gift.price, (confirmed) => {
-                                    if (confirmed) {
-                                        if (deductPlayerMoney(gift.price)) {
-                                            unlockedStatus[gift.id] = true;
-                                            localStorage.setItem('giftShopUnlocked', JSON.stringify(unlockedStatus));
-                                            renderGifts();
-                                            showToast(t('purchaseSuccess', gift.name));
-                                        }
-                                    }
-                                });
+                            if (isReady) {
+                                unlockedStatus[gift.id] = true;
+                                localStorage.setItem('giftShopUnlocked', JSON.stringify(unlockedStatus));
+                                renderGifts();
+                                showToast(`✅ ${gift.name} ${t('unlocked')}`);
                             } else {
-                                showToast(t('notEnoughMoney', gift.price));
+                                const needed = gift.neededAnswers - correctAnswers;
+                                showToast(t('needMore', needed));
                             }
                         };
                     } else {
