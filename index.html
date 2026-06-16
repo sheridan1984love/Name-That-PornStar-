@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* ===== شاشة التحميل ===== */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -169,7 +168,6 @@
             40% { transform: scale(1.2); opacity: 1; }
         }
 
-        /* ===== الصفحة الرئيسية ===== */
         .main-content {
             display: none;
         }
@@ -274,7 +272,6 @@
             letter-spacing: 1px;
         }
 
-        /* ===== المحتوى القابل للتمرير ===== */
         .scrollable-content {
             margin-top: 50%;
             padding: 20px;
@@ -490,7 +487,6 @@
 </head>
 <body>
 
-    <!-- شاشة التحميل -->
     <div class="loading-screen" id="loadingScreen">
         <div class="moving-icons-container" id="movingIconsContainer">
             <div class="icon-track">
@@ -520,7 +516,6 @@
         </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content" id="mainContent">
         <div class="fixed-header">
             <div class="falling-gifts-container" id="fallingGiftsContainer"></div>
@@ -544,6 +539,13 @@
     </div>
 
     <script>
+        // ===== قراءة العملات من رابط الصفحة =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const moneyFromUrl = urlParams.get('money');
+        if (moneyFromUrl !== null && !isNaN(moneyFromUrl)) {
+            localStorage.setItem('playerMoney', parseInt(moneyFromUrl));
+        }
+
         // ===== شاشة التحميل =====
         const loadingFill = document.getElementById('loadingFill');
         const loadingPercent = document.getElementById('loadingPercent');
@@ -796,6 +798,13 @@
 
             function setPlayerMoney(amount) {
                 localStorage.setItem('playerMoney', amount);
+                // تحديث الصفحة الأم إذا كانت موجودة
+                if (window.opener && !window.opener.closed) {
+                    window.opener.localStorage.setItem('playerMoney', amount);
+                    if (window.opener.updateMoneyDisplay) {
+                        window.opener.updateMoneyDisplay();
+                    }
+                }
             }
 
             function deductPlayerMoney(amount) {
