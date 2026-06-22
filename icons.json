@@ -4,7 +4,14 @@
         "name": "Dragon Icon",
         "price": 100,
         "type": "shop"
-    },    
+    },
+    {
+        "url": "https://example.com/icon2.png",
+        "name": "Gift Icon 2024",
+        "price": 0,
+        "type": "gift",
+        "giftCode": "GIFT001"
+    },
     {
         "url": "https://example.com/icon3.png",
         "name": "Event Icon",
@@ -16,6 +23,13 @@
         "name": "Golden Gift",
         "price": 0,
         "type": "gift",
-        "giftCode": "GIFT21"
-    },    
+        "giftCode": "GIFT002"
+    },
+    {
+        "url": "https://example.com/icon5.png",
+        "name": "Special Gift",
+        "price": 0,
+        "type": "gift",
+        "giftCode": "GIFT003"
+    }
 ]
