@@ -10,7 +10,7 @@
         "name": "Gift Icon 2024",
         "price": 0,
         "type": "gift",
-        "giftCode": "GIFT001"
+        "giftCode": "GIFT011"
     },
     {
         "url": "https://example.com/icon3.png",
@@ -23,13 +23,13 @@
         "name": "Golden Gift",
         "price": 0,
         "type": "gift",
-        "giftCode": "GIFT002"
+        "giftCode": "GIFT022"
     },
     {
         "url": "https://example.com/icon5.png",
         "name": "Special Gift",
         "price": 0,
         "type": "gift",
-        "giftCode": "GIFT003"
+        "giftCode": "GIFT033"
     }
 ]
