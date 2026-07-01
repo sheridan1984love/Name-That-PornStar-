@@ -1,1053 +1,3616 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gift Shop</title>
-    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+const allCrops = [
+    { id: 0, name: 'قمح', img: 'https://i.ibb.co/HTTNdRkP/wheat.png', cost: 0, profit: 10, time: 3, timeLabel: '3s', xp: 11392 },
+    { id: 1, name: 'ذرة', img: 'https://i.ibb.co/67RPHStB/corn.png', cost: 5, profit: 20, time: 30, timeLabel: '30s', xp: 20 },
+    { id: 2, name: 'طماطم', img: 'https://i.ibb.co/WpMcRBFD/tomatoes.png', cost: 10, profit: 30, time: 90, timeLabel: '1m 30s', xp: 30 },
+    { id: 3, name: 'بطاطا', img: 'https://i.ibb.co/wNznZ239/potatoes.png', cost: 20, profit: 50, time: 119, timeLabel: '2m', xp: 40 },
+    { id: 4, name: 'جزر', img: 'https://i.ibb.co/Ldm1M39x/carrot.png', cost: 25, profit: 60, time: 119, timeLabel: '2m', xp: 40 },
+    { id: 5, name: 'باذنجان', img: 'https://i.ibb.co/PvVmPj4Q/eggplant.png', cost: 50, profit: 80, time: 299, timeLabel: '5m', xp: 50 },
+    { id: 6, name: 'فراولة', img: 'https://i.ibb.co/93Vzw8gp/Strawberry.png', cost: 10, profit: 100, time: 1799, timeLabel: '30m', xp: 80 },
+    { id: 7, name: 'عنب', img: 'https://i.ibb.co/wXXGJpd/grapes.png', cost: 50, profit: 250, time: 3599, timeLabel: '1h', xp: 100 },
+    { id: 8, name: 'خيار', img: 'https://i.ibb.co/0jVwdxGT/cucumber.png', cost: 200, profit: 500, time: 7199, timeLabel: '2h', xp: 200 },
+    { id: 9, name: 'بروكلي', img: 'https://i.ibb.co/S4k8BQDT/broccoli.png', cost: 100, profit: 150, time: 899, timeLabel: '15m', xp: 60 },
+    { id: 10, name: 'فلفل', img: 'https://i.ibb.co/B5bpYf0h/Pepper.png', cost: 720, profit: 3000, time: 86399, timeLabel: 'يوم', xp: 1000 },
+    { id: 11, name: 'رمان', img: 'https://i.ibb.co/Pzbd4vMZ/pomegranate.png', cost: 400, profit: 1000, time: 28799, timeLabel: '8h', xp: 500 },
+    { id: 12, name: 'مانجو', img: 'https://i.ibb.co/QjfmCPw2/mango.png', cost: 500, profit: 2000, time: 43199, timeLabel: '12h', xp: 750 },
+    { id: 13, name: 'بطيخ', img: 'https://i.ibb.co/KYhqzX6/watermelon.png', cost: 720, profit: 3000, time: 86399, timeLabel: 'يوم', xp: 1000 },
+    { id: 14, name: 'يقطين', img: 'https://i.ibb.co/RT96VT9g/pumpkin.png', cost: 915, profit: 4000, time: 172799, timeLabel: 'يومان', xp: 2000 }
+];
 
-        body {
-            background-color: #FFC107;
-            font-family: 'Comic Neue', 'Jua', sans-serif;
-            min-height: 100vh;
-        }
+const goldenFruitCrop = {
+    id: 16, name: 'فاكهة ذهبية', img: 'https://i.ibb.co/W49Xsx6j/1775296771569.png',
+    cost: 0, profit: 1000, time: 43200, timeLabel: '12h', xp: 0
+};
 
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #FFC107;
-            z-index: 10000;
-            transition: opacity 0.5s ease, visibility 0.5s;
-        }
+const energyFruitCrop = {
+    id: 17, name: 'فاكهة الطاقة', img: 'https://i.ibb.co/0VzZXkm1/Xpp.png',
+    cost: 1000, profit: 0, time: 43200, timeLabel: '12h', xp: 1000
+};
 
-        .loading-screen.hide {
-            opacity: 0;
-            visibility: hidden;
-        }
+let diamonds = 5000;
+let money = 1000, level = 0, currentXP = 0;    
+let stats = { tilled: 0, planted: 0, totalProfit: 0, fav: {} };    
+let selectedCrop = allCrops[0], pendingCrop = null;    
+let inventory = { chicken: 0, cow: 0, sheep: 0 };
+let animalLevels = { chicken: 0, cow: 0, sheep: 0 };
+let animalCooldowns = { chicken: 0, cow: 0, sheep: 0 };
+let animalEnergy = { chicken: 0, cow: 0, sheep: 0 };
+let currentTab = 'chicken';
+let currentSellingAnimal = null;
+let totalProductsSold = { chicken: 0, cow: 0, sheep: 0 };
+const MAX_ANIMAL_LEVEL = 100;
+const MAX_CROP_LEVEL = 11;
 
-        .moving-icons-container {
-            position: relative;
-            width: 280px;
-            height: 120px;
-            margin-bottom: 30px;
-            overflow: visible;
-        }
+const barnData = {
+    chicken: { name: 'الدجاجة', img: 'https://i.ibb.co/HLYVyCCs/1773538709459.png', basePrice: 1000 },
+    cow: { name: 'البقرة', img: 'https://i.ibb.co/2pjfjbN/1773535366742.png', basePrice: 3000 },
+    sheep: { name: 'الخروف', img: 'https://i.ibb.co/B5cmqGDp/1773535777794.png', basePrice: 2000 }
+};
 
-        .icon-track {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
+const sellPrices = { chicken: 100, cow: 300, sheep: 200 };
+const productNames = { chicken: "بيض", cow: "حليب", sheep: "صوف" };
+const sellIcons = {
+    chicken: 'https://i.ibb.co/gbMXS0Yg/Egg.png',
+    sheep: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png',
+    cow: 'https://i.ibb.co/2YCB7dq0/1773562787884.png'
+};
 
-         .moving-icon {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 80px;
-            height: 80px;
-            transform: translateX(0px);
-            transition: transform 0.05s linear;
-            will-change: transform;
-        }
+let cropInventory = {};
+let cropUpgradeLevels = {};
+let growingCurrentTile = null;
+let currentSellingCrop = null;
+let currentInfoCrop = null;
 
-        .app-icon-wrapper {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
+// ==================== نظام الألقاب ====================
+let currentTitle = 'المزارع';
+const baseTitles = ['المزارع', 'الفلاح', 'البستاني', 'الحراث'];
+let unlockedTitles = [...baseTitles];
 
-        .app-icon {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .app-icon.show {
-            opacity: 1;
-        }
-
-        .spinner-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transition: opacity 0.3s ease, visibility 0.3s;
-        }
-
-        .spinner-overlay.hide {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .spinner-icon {
-            width: 100%;
-            height: 100%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-bar-container {
-            width: 280px;
-            height: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .loading-bar-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #00E676, #FFD700);
-            border-radius: 20px;
-            transition: width 0.05s linear;
-        }
-
-        .loading-percent {
-            font-family: 'Comic Neue', 'Jua', sans-serif;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 1px 1px 0 #000;
-            margin-bottom: 8px;
-        }
-
-        .loading-text {
-            font-family: 'Comic Neue', 'Jua', sans-serif;
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.85);
-            text-align: center;
-        }
-
-        .dots {
-            display: inline-block;
-            margin-left: 4px;
-        }
-
-        .dots span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-            margin: 0 1px;
-            animation: wave 1.4s infinite ease-in-out both;
-        }
-
-        .dots span:nth-child(1) { animation-delay: -0.32s; }
-        .dots span:nth-child(2) { animation-delay: -0.16s; }
-        .dots span:nth-child(3) { animation-delay: 0s; }
-
-        @keyframes wave {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-            40% { transform: scale(1.2); opacity: 1; }
-        }
-
-        .main-content {
-            display: none;
-        }
-
-        .main-content.show {
-            display: block;
-        }
-
-        .fixed-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background-color: #FFC107;
-            padding: 15px 20px 10px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .falling-gifts-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .falling-gift {
-            position: absolute;
-            top: -50px;
-            width: 35px;
-            height: 35px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            pointer-events: none;
-            z-index: 1;
-            animation: fall linear forwards;
-        }
-
-        @keyframes fall {
-            0% {
-                top: -50px;
-                opacity: 1;
-                transform: rotate(0deg);
-            }
-            100% {
-                top: 100%;
-                opacity: 0;
-                transform: rotate(360deg);
-            }
-        }
-
-        .back-btn, .title-section, .limited-box {
-            position: relative;
-            z-index: 2;
-        }
-
-        .back-btn {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            width: 45px;
-            height: 45px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            z-index: 100;
-        }
-        .back-btn:active { transform: scale(0.9); }
-        .back-btn img { width: 100%; height: 100%; object-fit: contain; }
-
-        .title-section {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .title {
-            font-family: 'Jua', cursive;
-            font-size: 1.8rem;
-            color: #fff;
-            -webkit-text-stroke: 2px #000;
-            paint-order: stroke fill;
-        }
+// فتح لقب جديد من الإنجاز
+function unlockTitle(title, achievementName, rewardAmount = 200) {
+    if (!unlockedTitles.includes(title)) {
+        unlockedTitles.push(title);
         
-        .limited-box {
-            background: rgba(255,170,0,1);
-            border-radius: 30px;
-            padding: 8px 16px;
-            text-align: center;
-            width: 50%;
-            margin: 0 auto;
-        }
-        .limited-text {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: white;
-            font-family: 'Jua', cursive;
-            letter-spacing: 1px;
-        }
-
-        .scrollable-content {
-            margin-top: 50%;
-            padding: 20px;
-            padding-bottom: 40px;
-        }
-
-        .container {
-            width: 100%;            
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .gift-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5%;
-            width: 100%;
-            transition: transform 0.1s ease;
-            cursor: default;
-            margin-bottom: 15%;
-            position: relative;
-        }
+        // إضافة مكافأة 200 ألماس
+        diamonds += rewardAmount;
+        updateUI();
         
-        .gift-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .gift-item:active { transform: scale(0.98); }
+        // إظهار إشعار الحصول على اللقب
+        showTitleUnlockNotification(title, rewardAmount);
+    }
+}
 
-        .square-box {
-            flex: 1.2;
-            aspect-ratio: 1 / 1;
-            background: #FFAA00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 5px solid #FFAA00;            
-            position: relative;
-        }
-
-        .square-box-inner {
-            width: 100%;
-            height: 100%;           
-            overflow: hidden;    
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #FFAA00;
-            border-radius: 20px;           
-        }
-
-        .square-box-inner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .square-box::before {
-            content: '';
-            position: absolute;
-            top: -46%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 110%;
-            height: 110%;
-            background-image: url('https://i.ibb.co/LDR687Yq/357-20260613173931.png');
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .rectangle-box {
-            flex: 2.2;
-            aspect-ratio: 7 / 4;
-            background: #FFAA00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 5px solid #C0392B;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-        .rectangle-box:active { transform: scale(0.97); }
-
-        .rectangle-box::before {
-            content: '';
-            position: absolute;
-            top: -66%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 110%;
-            height: 110%;
-            background-image: url('aaa.png');
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .rectangle-content {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,170,0,0.85);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            z-index: 9;
-        }
-
-        .price-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .price-text {
-            font-family: 'Jua', cursive;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 0 #000;
-        }
-
-        .coin-icon {
-            width: 28px;
-            height: 28px;
-            object-fit: contain;
-        }
-
-        .code-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .code-label {
-            font-size: 0.7rem;
-            color: #fff;
-            text-shadow: 1px 1px 0 #000;
-        }
-
-        .code-value {
-            font-family: 'Comic Neue', monospace;
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #FFD700;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 12px;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-        .code-value:active {
-            transform: scale(0.97);
-        }
-
-        img {
-            filter: none !important;
-            mix-blend-mode: normal !important;
-        }
-
-        .toast-message {
-            position: fixed;
-            top: 40px; 
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #FFA000;
-            color: #FFFFFF;
-            padding: 8px 20px;
-            z-index: 10001;
-            font-weight: bold;
-            border-radius: 10px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: toastPopIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-            font-family: 'Comic Neue', 'Jua', sans-serif;
-            white-space: nowrap;
-        }
-
-        @keyframes toastPopIn {
-            0% { opacity: 0; transform: translateX(-50%) scale(0.7); }
-            100% { opacity: 1; transform: translateX(-50%) scale(1); }
-        }
-
-        .toast-message.fade-out { 
-            animation: toastFadeOut 0.2s ease-out forwards; 
-        }
-        
-        @keyframes toastFadeOut {
-            0% { opacity: 1; transform: translateX(-50%) scale(1); }
-            100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="loading-screen" id="loadingScreen">
-        <div class="moving-icons-container" id="movingIconsContainer">
-            <div class="icon-track">
-                <div class="moving-icon" id="movingIcon">
-                    <div class="app-icon-wrapper">
-                        <img class="app-icon" id="appIcon" src="https://i.ibb.co/VcT9m5xx/Gk6-N5q-EUl-VYR.gif" alt="App Icon">
-                    </div>
-                    <div class="spinner-overlay" id="spinnerOverlay">
-                        <img class="spinner-icon" src="https://i.ibb.co/H0pYMzc/image.png" alt="loading spinner">
-                    </div>
+// إشعار الحصول على اللقب
+function showTitleUnlockNotification(title, rewardAmount) {
+    const notification = document.createElement('div');
+    notification.className = 'task-reward-notification';
+    notification.innerHTML = `
+        <div class="task-complete-title">🎉 لقد أكملت ميدالية المستوى الذهبي! 🎉</div>
+        <div class="rewards-float-container">
+            <div class="reward-float-item">
+                <div class="reward-expansion-header" style="margin-bottom: 5px;">
+                    <span class="reward-expansion-text" style="font-size: 18px;">حصلت على لقب: ${title}</span>
+                </div>
+                <div class="reward-expansion-diamonds">
+                    <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 35px;">
+                    <span style="font-size: 24px;">+${rewardAmount}</span>
                 </div>
             </div>
         </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 500);
+    }, 3500);
+}
+
+// عرض الألقاب في شبكة 2x2
+function renderTitlesGrid() {
+    const grid = document.getElementById('titlesGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    unlockedTitles.forEach(title => {
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'title-option';
+        if (title === currentTitle) {
+            titleDiv.classList.add('selected');
+        }
+        titleDiv.textContent = title;
+        titleDiv.onclick = () => selectTitle(title);
+        grid.appendChild(titleDiv);
+    });
+}
+
+// اختيار لقب جديد
+function selectTitle(title) {
+    currentTitle = title;
+    document.getElementById('currentTitle').textContent = currentTitle;
+    closeTitlesMenu();
+    showNotify(`تم تغيير اللقب إلى "${currentTitle}"`);
+}
+
+// فتح قائمة الألقاب
+function openTitlesMenu(event) {
+    event.stopPropagation();
+    const overlay = document.getElementById('titlesOverlay');
+    renderTitlesGrid();
+    overlay.classList.add('active');
+}
+
+// إغلاق قائمة الألقاب
+function closeTitlesMenu() {
+    const overlay = document.getElementById('titlesOverlay');
+    overlay.classList.remove('active');
+}
+
+// ==================== القدرات ====================
+let abilities = {
+    speed: 300,
+    double: 3,
+    instant: 3
+};
+
+let currentAbilityType = null;
+let currentAbilityTile = null;
+
+const abilitiesData = {
+    speed: {
+        name: 'النمو السريع',
+        img: 'https://i.ibb.co/your-speed-icon.png',
+        description: 'تسريع نمو المحصول',
+        effect: 'يتحرك شريط الوقت أسرع مرتين'
+    },
+    double: {
+        name: 'النضج الجيد',
+        img: 'https://i.ibb.co/your-double-icon.png',
+        description: 'فرصة الحصول على محاصيل إضافية',
+        effect: '2-5 محاصيل إضافية'
+    },
+    instant: {
+        name: 'موسم الحصاد',
+        img: 'https://i.ibb.co/your-instant-icon.png',
+        description: 'إنهاء وقت الانتظار',
+        effect: 'ينهي وقت المحصول، المحصول يصبح جاهزاً للحصاد'
+    }
+};
+
+// ==================== نظام مهام الفلاح ====================
+const taskList = [
+    { desc: "ازرع واجمع 5 حبات قمح", target: 5, type: "crop", crop: "قمح", rewards: { xp: 1000, money:0, diamond: 0, ability: null, crop: "جزر", cropAmount: 5 } },
+    { desc: "قم بحراثة 10 من الاراضي", target: 10, type: "tilled", rewards: { xp: 1000, money: 300, diamond: 50, ability: null, crop: null } },
+    { desc: "اجمع أرباح بقيمة 100 عملة", target: 100, type: "money", rewards: { xp: 1000, money: 200, diamond: 30, ability: null, crop: null } },
+    { desc: "ازرع واجمع 10 حبات جزر", target: 10, type: "crop", crop: "جزر", rewards: { xp: 1000, money: 0, diamond: 0, ability: "speed", crop: null } },
+    { desc: "ازرع واجمع 8 حبات باذنجان", target: 8, type: "crop", crop: "باذنجان", rewards: { xp: 1000, money: 0, diamond: 0, ability: "double", crop: null } },
+    { desc: "قم بحراثة 20 قطعة من الأرض", target: 20, type: "tilled", rewards: { xp: 1000, money: 0, diamond: 100, ability: null, crop: null } },
+    { desc: "اجمع أرباح بقيمة 500 عملة", target: 500, type: "money", rewards: { xp: 1000, money: 0, diamond: 0, ability: "instant", crop: null } },
+    { desc: "ازرع واجمع 15 حبة فراولة", target: 15, type: "crop", crop: "فراولة", rewards: { xp: 1000, money: 1500, diamond: 0, ability: null, crop: null } },
+    { desc: "ازرع واجمع 12 حبة عنب", target: 12, type: "crop", crop: "عنب", rewards: { xp: 1000, money: 0, diamond: 0, ability: "speed", crop: null } },
+    { desc: "ازرع واجمع 10 حبات خيار", target: 10, type: "crop", crop: "خيار", rewards: { xp: 1000, money: 0, diamond: 50, ability: "double", crop: null } },
+    { desc: "ازرع واجمع 20 حبة فاكهة الطاقة", target: 20, type: "crop", crop: "فاكهة الطاقة", rewards: { xp: 2000, money: 0, diamond: 0, ability: null, crop: "فاكهة الطاقة" } },
+    { desc: "احصد 50 محصول", target: 50, type: "harvest", rewards: { xp: 1500, money: 0, diamond: 80, ability: null, crop: null } }
+];
+
+let currentTask = null;
+let taskIndex = 0;
+let taskCooldown = 10;
+let taskTimeLeft = taskCooldown;
+let taskTempStats = { tilled: 0, planted: {}, money: 0, harvest: 0 };
+let completedTasksCount = 0;
+
+// ==================== دوال المساعدة العامة ====================
+function showNotify(message) {    
+    const oldNotify = document.querySelector('.game-notification');    
+    if (oldNotify) oldNotify.remove();    
+    const notify = document.createElement('div');    
+    notify.className = 'game-notification';    
+    notify.innerText = message;    
+    document.body.appendChild(notify);    
+    setTimeout(() => { notify.remove(); }, 2000);    
+}    
+
+function showNotifyHTML(message) {    
+    const oldNotify = document.querySelector('.game-notification');    
+    if (oldNotify) oldNotify.remove();    
+    const notify = document.createElement('div');    
+    notify.className = 'game-notification';    
+    notify.innerHTML = message;
+    document.body.appendChild(notify);    
+    setTimeout(() => { notify.remove(); }, 3000);    
+}
+
+function getReqXP(l) {    
+    if (l <= 10) return 100;    
+    if (l <= 20) return 1000;    
+    if (l <= 30) return 5000;
+    return 100;  
+}    
+
+let gameStartTime = Date.now();
+
+function getPlayTimeDisplay() {
+    const elapsedSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+    
+    const years = Math.floor(elapsedSeconds / (365 * 24 * 3600));
+    let remaining = elapsedSeconds % (365 * 24 * 3600);
+    const months = Math.floor(remaining / (30 * 24 * 3600));
+    remaining = remaining % (30 * 24 * 3600);
+    const days = Math.floor(remaining / (24 * 3600));
+    remaining = remaining % (24 * 3600);
+    const hours = Math.floor(remaining / 3600);
+    remaining = remaining % 3600;
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+    
+    if (years > 0) return `${years} سنة`;
+    if (months > 0) return `${months} شهر`;
+    if (days > 0) return `${days} يوم`;
+    if (hours > 0) return `${hours} ساعة`;
+    if (minutes > 0) return `${minutes} دقيقة`;
+    return `${seconds} ثانية`;
+}
+
+function updateUI() {    
+    document.getElementById('moneyDisplay').textContent = money;    
+    document.getElementById('diamondDisplay').textContent = diamonds;
+    document.getElementById('lvlDisplay').textContent = "Lv." + level;    
+    let req = getReqXP(level);    
+    document.getElementById('expFill').style.width = (currentXP / req * 100) + "%";    
+    document.getElementById('statTilled').textContent = stats.tilled;    
+    document.getElementById('statPlanted').textContent = stats.planted;    
+    document.getElementById('statTotalProfit').textContent = stats.totalProfit;    
+    let best = "---", max = 0;    
+    for(let k in stats.fav) if(stats.fav[k] > max) { max = stats.fav[k]; best = k; }    
+    document.getElementById('statFav').textContent = best;    
+    
+    if (document.getElementById('profileModal').classList.contains('active')) {
+        updateProfileModal();
+    }
+}    
+
+function createFloatingText(tile, text, color) {    
+    const r = tile.getBoundingClientRect();    
+    const e = document.createElement('div');     
+    e.className = 'floating-text';    
+    e.innerHTML = `${text} <span class="floating-icon"></span>`;    
+    e.style.left = r.left + 'px'; e.style.top = r.top + 'px'; e.style.color = color;    
+    document.body.appendChild(e);     
+    setTimeout(() => e.remove(), 800);    
+}    
+
+function createFloatingTextWithCropAndCount(tile, cropImg, count, xpText, color, diamondEarned = false) {    
+    const r = tile.getBoundingClientRect();    
+    const e = document.createElement('div');     
+    e.className = 'floating-text';    
+    e.innerHTML = `+${count} <img src="${cropImg}" style="width:44px; height:44px; display:inline-block; object-fit:contain; vertical-align:middle;">`;    
+    e.style.left = r.left + 'px'; 
+    e.style.top = r.top + 'px'; 
+    e.style.color = color;    
+    e.style.fontSize = '18px';
+    e.style.fontWeight = 'bold';
+    
+    const xpElement = document.createElement('div');
+    xpElement.className = 'floating-xp';
+    xpElement.innerHTML = `${xpText} <img src="https://i.ibb.co/8gf9nWHd/XP.png" style="width:20px; height:20px; vertical-align:middle;">`;
+    xpElement.style.position = 'absolute';
+    xpElement.style.left = (r.left + 0) + 'px';
+    xpElement.style.top = (r.top + 40) + 'px';
+    xpElement.style.color = '#00DEF7';
+    xpElement.style.fontWeight = 'bold';
+    xpElement.style.fontSize = '18px';
+    xpElement.style.whiteSpace = 'nowrap';
+    xpElement.style.pointerEvents = 'none';
+    xpElement.style.animation = 'floatUp 1.5s forwards';
+    xpElement.style.zIndex = '101';
+    
+    document.body.appendChild(e);     
+    document.body.appendChild(xpElement);
+    
+    if (diamondEarned) {
+        const diamondElement = document.createElement('div');
+        diamondElement.className = 'floating-diamond';
+        diamondElement.innerHTML = `+1 <span class="floating-diamond-icon"></span>`;
+        diamondElement.style.position = 'absolute';
+        diamondElement.style.left = (r.left + 0) + 'px';
+        diamondElement.style.top = (r.top + 80) + 'px';
+        diamondElement.style.fontSize = '18px';
+        diamondElement.style.whiteSpace = 'nowrap';
+        diamondElement.style.pointerEvents = 'none';
+        diamondElement.style.animation = 'floatUp 1.5s forwards';
+        diamondElement.style.zIndex = '101';
+        document.body.appendChild(diamondElement);
+        setTimeout(() => diamondElement.remove(), 1000);
+    }
+    
+    setTimeout(() => { 
+        e.remove(); 
+        xpElement.remove(); 
+    }, 1000);    
+}
+
+function getCropProfitWithUpgrade(crop) {
+    let baseProfit = crop.profit;
+    let level = cropUpgradeLevels[crop.name] || 1;
+    let multiplier = 1 + ((level - 1) * 0.1);
+    if (crop.name === 'فاكهة الطاقة') return 0;
+    if (crop.name === 'فاكهة ذهبية') return 1000;
+    let profit = Math.floor(baseProfit * multiplier);
+    profit = applyEventToCropProfit(profit);
+    return profit;
+}
+
+function getCropXPWithUpgrade(crop) {
+    let baseXP = crop.xp;
+    
+    if (crop.name === 'فاكهة ذهبية') return 0;
+    if (crop.name === 'فاكهة الطاقة') return 1000;
+    
+    let level = cropUpgradeLevels[crop.name] || 1;
+    let multiplier = 1 + ((level - 1) * 0.1);
+    let xp = Math.floor(baseXP * multiplier);
+    xp = applyEventToXP(xp);
+    return xp;
+}
+
+function getLevelText(level, cropName) {
+    if (cropName === 'فاكهة ذهبية') return "المستوى الأقصى";
+    if (cropName === 'فاكهة الطاقة') return "المستوى الأقصى";
+    if (level >= MAX_CROP_LEVEL) return "المستوى الأقصى";
+    return `المستوى ${level}`;
+}
+
+// تهيئة
+allCrops.forEach(crop => { cropInventory[crop.name] = 0; });
+
+function initCropUpgrades() {
+    allCrops.forEach(crop => {
+        if (crop.name !== 'فاكهة الطاقة' && crop.profit > 0 && crop.name !== 'فاكهة ذهبية') {
+            cropUpgradeLevels[crop.name] = 1;
+        }
+    });
+}
+initCropUpgrades();
+
+// ==================== دوال القدرات ====================
+function updateAbilitiesDisplay() {
+    const container = document.getElementById('abilitiesContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const speedBtn = createAbilityButton('speed', 'النمو السريع', abilitiesData.speed.img);
+    const doubleBtn = createAbilityButton('double', 'النضج الجيد', abilitiesData.double.img);
+    const instantBtn = createAbilityButton('instant', 'موسم الحصاد', abilitiesData.instant.img);
+    
+    container.appendChild(speedBtn);
+    container.appendChild(doubleBtn);
+    container.appendChild(instantBtn);
+}
+
+function createAbilityButton(type, name, imgSrc) {
+    const btn = document.createElement('div');
+    btn.className = 'ability-trigger';
+    btn.onclick = () => useAbility(type, growingCurrentTile);
+    
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.alt = name;
+    
+    const label = document.createElement('div');
+    label.className = 'ability-label';
+    label.textContent = name;
+    
+    const badge = document.createElement('div');
+    badge.className = 'ability-badge';
+    badge.id = `ability${type.charAt(0).toUpperCase() + type.slice(1)}Count`;
+    badge.textContent = abilities[type];
+    
+    btn.appendChild(img);
+    btn.appendChild(label);
+    btn.appendChild(badge);
+    
+    return btn;
+}
+
+function addAbility(abilityType, amount = 1) {
+    if (abilities[abilityType] !== undefined) {
+        abilities[abilityType] += amount;
+        updateAbilitiesDisplay();
+        showNotify(`+${amount} قدرة ${abilitiesData[abilityType].name}!`);
+    }
+}
+
+function useAbility(abilityType, tile) {
+    if (!tile) {
+        showNotify("لا يوجد محصول نشط!");
+        return;
+    }
+    if (abilities[abilityType] <= 0) {
+        showNotify(`ليس لديك قدرة ${abilitiesData[abilityType].name}!`);
+        return;
+    }
+    if (tile.dataset.state !== 'growing') {
+        showNotify("لا يمكن استخدام القدرة على محصول غير نامي!");
+        return;
+    }
+    
+    currentAbilityType = abilityType;
+    currentAbilityTile = tile;
+    
+    const overlay = document.getElementById('abilityInfoOverlay');
+    document.getElementById('abilityInfoIcon').src = abilitiesData[abilityType].img;
+    document.getElementById('abilityInfoName').textContent = abilitiesData[abilityType].name;
+    document.getElementById('abilityInfoDesc').innerHTML = `
+        <strong>${abilitiesData[abilityType].description}</strong><br>
+        <small style="font-size:11px;">${abilitiesData[abilityType].effect}</small>
+        <div style="margin-top:8px; background:#dcb091; border-radius:10px; padding:5px;">
+            المتوفر: ${abilities[abilityType]}
+        </div>
+    `;
+    overlay.classList.add('show');
+}
+
+function closeAbilityInfo() {
+    const overlay = document.getElementById('abilityInfoOverlay');
+    overlay.classList.remove('show');
+    currentAbilityType = null;
+    currentAbilityTile = null;
+}
+
+function useCurrentAbility() {
+    if (!currentAbilityType || !currentAbilityTile) {
+        closeAbilityInfo();
+        return;
+    }
+    
+    const abilityType = currentAbilityType;
+    const tile = currentAbilityTile;
+    
+    if (abilities[abilityType] <= 0) {
+        showNotify(`ليس لديك قدرة ${abilitiesData[abilityType].name}!`);
+        closeAbilityInfo();
+        return;
+    }
+    
+    abilities[abilityType]--;
+    updateAbilitiesDisplay();
+    closeAbilityInfo();
+    
+    switch(abilityType) {
+        case 'speed':
+            useSpeedAbility(tile);
+            break;
+        case 'double':
+            useDoubleAbility(tile);
+            break;
+        case 'instant':
+            useInstantAbility(tile);
+            break;
+    }
+}
+
+function useSpeedAbility(tile) {
+    let currentSpeed = parseFloat(tile.dataset.speedFactor);
+    if (isNaN(currentSpeed)) currentSpeed = 1;
+    let newSpeed = currentSpeed * 2;
+    tile.dataset.speedFactor = newSpeed;
+    
+    addGoldenGlow(tile);
+    showNotify(`⚡ تم تسريع نمو المحصول! (×${newSpeed}) ⚡`);
+    if (growingCurrentTile === tile) updateGrowingInfo(tile);
+}
+
+function useDoubleAbility(tile) {
+    tile.dataset.doubleAbility = 'true';
+    addGoldenGlow(tile);
+    showNotify("🍀 لديك فرصة للحصول على محاصيل إضافية! 🍀");
+}
+
+function useInstantAbility(tile) {
+    tile.dataset.remainingTime = 0;
+    showNotify("🌾 تم إنهاء وقت المحصول! المحصول جاهز للحصاد 🌾");
+    const cont = tile.querySelector('.growth-timer-container');
+    if (cont) cont.style.display = 'none';
+    tile.classList.add('is-crop');
+    tile.dataset.state = 'ready';
+    tile.classList.remove('golden-soil');
+    tile.classList.remove('energy-soil');
+    if (growingCurrentTile === tile) closeGrowingInfo();
+}
+
+function addGoldenGlow(tile) {
+    tile.style.border = "3px dashed #ffd700";
+    tile.style.boxShadow = "0 0 8px rgba(255, 215, 0, 0.6)";
+    tile.style.transition = "all 0.3s ease";
+}
+
+function removeGoldenGlow(tile) {
+    tile.style.border = "3px dashed rgba(0,0,0,0.15)";
+    tile.style.boxShadow = "none";
+    tile.classList.remove('golden-soil');
+    tile.classList.remove('energy-soil');
+}
+
+// ==================== نظام النمو ====================
+function startCropGrowth(tile, crop) {
+    let totalTime = crop.time;
+    totalTime = applyEventToCropTime(totalTime);
+    
+    tile.dataset.totalTime = totalTime;
+    tile.dataset.remainingTime = totalTime;
+    tile.dataset.speedFactor = 1;
+    tile.dataset.cropProfit = crop.profit;
+    tile.dataset.cropXp = crop.xp;
+    tile.dataset.cropName = crop.name;
+    tile.dataset.cropImg = crop.img;
+    tile.dataset.state = 'growing';
+    
+    removeGoldenGlow(tile);
+    tile.classList.remove('golden-soil');
+    tile.classList.remove('energy-soil');
+    
+    if (crop.name === 'فاكهة ذهبية') {
+        addGoldenGlow(tile);
+        tile.classList.add('golden-soil');
+    } else if (crop.name === 'فاكهة الطاقة') {
+        tile.classList.add('energy-soil');
+        tile.style.border = "3px dashed #00bcd4";
+        tile.style.boxShadow = "0 0 8px rgba(0, 188, 212, 0.6)";
+    } else {
+        removeGoldenGlow(tile);
+    }
+    
+    const cont = tile.querySelector('.growth-timer-container');
+    const fill = tile.querySelector('.progress-fill');
+    const txt = tile.querySelector('.time-text');
+    cont.style.display = 'flex';
+    
+    const updateDisplay = () => {
+        let remaining = parseFloat(tile.dataset.remainingTime);
+        let total = parseFloat(tile.dataset.totalTime);
         
-        <div class="loading-bar-container">
-            <div class="loading-bar-fill" id="loadingFill"></div>
-        </div>
+        if (remaining <= 0) {
+            clearInterval(tile.growthInterval);
+            cont.style.display = 'none';
+            tile.classList.add('is-crop');
+            tile.dataset.state = 'ready';
+            tile.dataset.profit = tile.dataset.cropProfit;
+            removeGoldenGlow(tile);
+            tile.classList.remove('golden-soil');
+            tile.classList.remove('energy-soil');
+            if (growingCurrentTile === tile) closeGrowingInfo();
+            return;
+        }
         
-        <div class="loading-percent" id="loadingPercent">0%</div>
-        <div class="loading-text">
-            Loading
-            <span class="dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </span>
-        </div>
-    </div>
+        let progress = ((total - remaining) / total) * 100;
+        fill.style.width = Math.min(progress, 100) + "%";
+        
+        const days = Math.floor(remaining / 86400);
+        const hours = Math.floor((remaining % 86400) / 3600);
+        const minutes = Math.floor((remaining % 3600) / 60);
+        const seconds = Math.floor(remaining % 60);
+        
+        let timeString = "";
+        if (days > 0) {
+            timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        } else if (hours > 0) {
+            timeString = `${hours}h ${minutes}m ${seconds}s`;
+        } else if (minutes > 0) {
+            timeString = `${minutes}m ${seconds}s`;
+        } else {
+            timeString = `${seconds}s`;
+        }
+        txt.textContent = timeString;
+        
+        if (growingCurrentTile === tile) {
+            document.getElementById('growingProgressFill').style.width = Math.min(progress, 100) + "%";
+            document.getElementById('growingTimeText').textContent = timeString;
+        }
+    };
+    
+    updateDisplay();
+    
+    const growthInterval = setInterval(() => {
+        let remaining = parseFloat(tile.dataset.remainingTime);
+        let speed = parseFloat(tile.dataset.speedFactor) || 1;
+        
+        remaining -= (0.1 * speed);
+        if (remaining < 0) remaining = 0;
+        tile.dataset.remainingTime = remaining;
+        
+        let progress = ((totalTime - remaining) / totalTime) * 100;
+        fill.style.width = Math.min(progress, 100) + "%";
+        
+        const days = Math.floor(remaining / 86400);
+        const hours = Math.floor((remaining % 86400) / 3600);
+        const minutes = Math.floor((remaining % 3600) / 60);
+        const seconds = Math.floor(remaining % 60);
+        
+        let timeString = "";
+        if (days > 0) {
+            timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        } else if (hours > 0) {
+            timeString = `${hours}h ${minutes}m ${seconds}s`;
+        } else if (minutes > 0) {
+            timeString = `${minutes}m ${seconds}s`;
+        } else {
+            timeString = `${seconds}s`;
+        }
+        txt.textContent = timeString;
+        
+        if (growingCurrentTile === tile) {
+            document.getElementById('growingProgressFill').style.width = Math.min(progress, 100) + "%";
+            document.getElementById('growingTimeText').textContent = timeString;
+        }
+        
+        if (remaining <= 0) {
+            clearInterval(growthInterval);
+            cont.style.display = 'none';
+            tile.classList.add('is-crop');
+            tile.dataset.state = 'ready';
+            tile.dataset.profit = tile.dataset.cropProfit;
+            removeGoldenGlow(tile);
+            tile.classList.remove('golden-soil');
+            tile.classList.remove('energy-soil');
+            if (growingCurrentTile === tile) closeGrowingInfo();
+        }
+    }, 100);
+    
+    tile.growthInterval = growthInterval;
+}
 
-    <div class="main-content" id="mainContent">
-        <div class="fixed-header">
-            <div class="falling-gifts-container" id="fallingGiftsContainer"></div>
+function updateGrowingInfo(tile) {
+    if (!tile || tile.dataset.state !== 'growing') return;
+    
+    let totalTime = parseFloat(tile.dataset.totalTime);
+    let remaining = parseFloat(tile.dataset.remainingTime);
+    
+    let progress = ((totalTime - remaining) / totalTime) * 100;
+    document.getElementById('growingProgressFill').style.width = Math.min(progress, 100) + "%";
+    
+    const days = Math.floor(remaining / 86400);
+    const hours = Math.floor((remaining % 86400) / 3600);
+    const minutes = Math.floor((remaining % 3600) / 60);
+    const seconds = Math.floor(remaining % 60);
+    
+    let timeString = "";
+    if (days > 0) {
+        timeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    } else if (hours > 0) {
+        timeString = `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+        timeString = `${minutes}m ${seconds}s`;
+    } else {
+        timeString = `${seconds}s`;
+    }
+    document.getElementById('growingTimeText').textContent = timeString;
+}
+
+function openGrowingInfo(tile) {
+    if (tile.dataset.state !== 'growing') return;
+    growingCurrentTile = tile;
+    const overlay = document.getElementById('growingInfoOverlay');
+    document.getElementById('growingInfoImg').src = tile.dataset.cropImg;
+    document.getElementById('growingInfoName').textContent = tile.dataset.cropName;
+    updateGrowingInfo(tile);
+    overlay.classList.add('active');
+    updateAbilitiesDisplay();
+}
+
+function closeGrowingInfo() { 
+    const overlay = document.getElementById('growingInfoOverlay'); 
+    overlay.classList.remove('active'); 
+    growingCurrentTile = null; 
+}
+
+// ==================== دوال المهام ====================
+function openFarmerTasks() { 
+    if(level < 5){ 
+        showNotify("المهام تظهر بعد الوصول إلى المستوى 5"); 
+        return; 
+    } 
+    const overlay = document.getElementById('farmerTasksOverlay');
+    renderTask();
+    overlay.classList.add('active');
+}    
+
+function closeFarmerTasks() { 
+    const overlay = document.getElementById('farmerTasksOverlay');
+    overlay.classList.remove('active');
+}
+
+function renderTask() {
+    const taskDescEl = document.getElementById('taskDesc');
+    const taskNumberBadge = document.getElementById('taskNumberBadge');
+    const timerEl = document.getElementById('taskTimer');
+    const progressBadge = document.getElementById('progressBadgeFarmer');
+    const rewardsFlex = document.getElementById('rewardsFlex');
+    const collectBtn = document.getElementById('collectBtn');
+    const rewardsWrapper = document.getElementById('rewardsWrapper');
+    
+    if (!currentTask) {
+        taskDescEl.textContent = 'لا توجد مهام حاليًا';
+        taskNumberBadge.classList.add('hidden');
+        timerEl.classList.remove('hidden');
+        progressBadge.classList.add('hidden');
+        rewardsWrapper.classList.add('hidden');
+        return;
+    }
+    
+    taskNumberBadge.classList.remove('hidden');
+    taskNumberBadge.textContent = `المهمة #${currentTask.id}`;
+    timerEl.classList.add('hidden');
+    progressBadge.classList.remove('hidden');
+    rewardsWrapper.classList.remove('hidden');
+    
+    taskDescEl.textContent = currentTask.desc;
+    
+    let progress = getTaskProgress(currentTask);
+    progressBadge.textContent = `${progress}/${currentTask.target}`;
+    
+    renderTaskRewards(currentTask.rewards);
+    
+    if (progress >= currentTask.target) {
+        collectBtn.classList.remove('hidden');
+    } else {
+        collectBtn.classList.add('hidden');
+    }
+}
+
+function renderTaskRewards(rewards) {
+    const rewardsFlex = document.getElementById('rewardsFlex');
+    if (!rewardsFlex) return;
+    
+    rewardsFlex.innerHTML = '';
+    
+    const xpReward = document.createElement('div');
+    xpReward.className = 'reward-box';
+    xpReward.innerHTML = `
+        <div class="reward-box-inner">
+            <img src="https://i.ibb.co/8gf9nWHd/XP.png" class="reward-img" alt="XP">
+            <div class="reward-amount">${rewards.xp || 1000}</div>
+        </div>
+    `;
+    rewardsFlex.appendChild(xpReward);
+    
+    if (rewards.money && rewards.money > 0) {
+        const moneyReward = document.createElement('div');
+        moneyReward.className = 'reward-box';
+        moneyReward.innerHTML = `
+            <div class="reward-box-inner">
+                <img src="https://i.ibb.co/N6GXqGpk/Money.png" class="reward-img" alt="عملات">
+                <div class="reward-amount">${rewards.money}</div>
+            </div>
+        `;
+        rewardsFlex.appendChild(moneyReward);
+    }
+    
+    if (rewards.diamond && rewards.diamond > 0) {
+        const diamondReward = document.createElement('div');
+        diamondReward.className = 'reward-box';
+        diamondReward.innerHTML = `
+            <div class="reward-box-inner">
+                <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" class="reward-img" alt="ألماس">
+                <div class="reward-amount">${rewards.diamond}</div>
+            </div>
+        `;
+        rewardsFlex.appendChild(diamondReward);
+    }
+    
+    if (rewards.ability && rewards.ability !== 'null') {
+        const abilityReward = document.createElement('div');
+        abilityReward.className = 'reward-box';
+        abilityReward.innerHTML = `
+            <div class="reward-box-inner">
+                <img src="${abilitiesData[rewards.ability].img}" class="reward-img" alt="قدرة">
+                <div class="reward-amount">1</div>
+            </div>
+        `;
+        rewardsFlex.appendChild(abilityReward);
+    }
+    
+    if (rewards.crop && rewards.crop !== 'null') {
+        const cropData = allCrops.find(c => c.name === rewards.crop);
+        if (cropData) {
+            const cropReward = document.createElement('div');
+            cropReward.className = 'reward-box';
+            const amount = rewards.cropAmount || 1;
+            cropReward.innerHTML = `
+                <div class="reward-box-inner">
+                    <img src="${cropData.img}" class="reward-img" alt="${cropData.name}">
+                    <div class="reward-amount">${amount}</div>
+                </div>
+            `;
+            rewardsFlex.appendChild(cropReward);
+        }
+    }
+}
+
+function getTaskProgress(task) {
+    if (task.type === 'crop') {
+        return taskTempStats.planted[task.crop] || 0;
+    } else if (task.type === 'tilled') {
+        return taskTempStats.tilled;
+    } else if (task.type === 'money') {
+        return taskTempStats.money;
+    } else if (task.type === 'harvest') {
+        return taskTempStats.harvest || 0;
+    }
+    return 0;
+}
+
+function nextTask() {
+    if (taskIndex >= taskList.length) {
+        showNotify("🎉 مبروك! أكملت جميع مهام الفلاح! 🎉");
+        return null;
+    }
+    
+    const task = taskList[taskIndex];
+    taskIndex++;
+    taskTempStats = { tilled: 0, planted: {}, money: 0, harvest: 0 };
+    
+    const newTask = {
+        id: taskIndex,
+        desc: task.desc,
+        target: task.target,
+        type: task.type,
+        crop: task.crop,
+        rewards: task.rewards,
+        check: function() {
+            if (this.type === 'crop') {
+                return (taskTempStats.planted[this.crop] || 0) >= this.target;
+            } else if (this.type === 'tilled') {
+                return taskTempStats.tilled >= this.target;
+            } else if (this.type === 'money') {
+                return taskTempStats.money >= this.target;
+            } else if (this.type === 'harvest') {
+                return (taskTempStats.harvest || 0) >= this.target;
+            }
+            return false;
+        }
+    };
+    
+    showNewTaskNotification(task.desc);
+    
+    return newTask;
+}
+
+function updateTaskTimer() {    
+    const t = document.getElementById('taskTimer');    
+    if (!t) return;
+    const m = String(Math.floor(taskTimeLeft / 60)).padStart(2, '0');    
+    const s = String(taskTimeLeft % 60).padStart(2, '0');    
+    t.textContent = `المهمة التالية بعد: ${m}:${s}`;    
+}
+
+function collectTaskRewards() {
+    if (!currentTask) return;
+    
+    const progress = getTaskProgress(currentTask);
+    if (progress < currentTask.target) {
+        showNotify("لم تكمل المهمة بعد!");
+        return;
+    }
+    
+    const rewards = currentTask.rewards;
+    
+    currentXP += rewards.xp || 1000;
+    let req = getReqXP(level);
+    while (currentXP >= req) {
+        currentXP -= req;
+        level++;
+        req = getReqXP(level);
+        if (level % 5 === 0) showLevelUpUI(level);
+    }
+    
+    if (rewards.money) money += rewards.money;
+    if (rewards.diamond) diamonds += rewards.diamond;
+    if (rewards.ability && rewards.ability !== 'null') {
+        addAbility(rewards.ability, 1);
+    }
+    
+    if (rewards.crop && rewards.crop !== 'null') {
+        if (cropInventory[rewards.crop] !== undefined) {
+            const amount = rewards.cropAmount || 1;
+            cropInventory[rewards.crop] += amount;
+        }
+    }
+    
+    updateUI();
+    showTaskCompleteNotification(rewards);
+    
+    completedTasksCount++;
+    currentTask = null;
+    taskTimeLeft = taskCooldown;
+    
+    renderTask();
+}
+
+function updateTaskStats(action, data) {
+    if (level < 5) return;
+    if (!currentTask) return;
+    if (currentTask.check()) return;
+    
+    if (action === 'tilled') {
+        taskTempStats.tilled += data;
+    } else if (action === 'planted') {
+        taskTempStats.planted[data.crop] = (taskTempStats.planted[data.crop] || 0) + data.count;
+    } else if (action === 'money') {
+        taskTempStats.money += data;
+    } else if (action === 'harvest') {
+        taskTempStats.harvest = (taskTempStats.harvest || 0) + data;
+    }
+    
+    renderTask();
+}
+
+function addTaskTilled(amount = 1) {
+    updateTaskStats('tilled', amount);
+}
+
+function addTaskPlanted(cropName, count = 1) {
+    updateTaskStats('planted', { crop: cropName, count: count });
+}
+
+function addTaskMoney(amount) {
+    updateTaskStats('money', amount);
+}
+
+function addTaskHarvest(amount = 1) {
+    updateTaskStats('harvest', amount);
+}
+
+function showTaskCompleteNotification(rewards) {
+    const notification = document.createElement('div');
+    notification.className = 'task-reward-notification';
+    
+    let rewardHtml = '';
+    
+    rewardHtml += `
+        <div class="reward-float-item">
+            <img src="https://i.ibb.co/8gf9nWHd/XP.png" class="reward-float-img">
+            <div class="reward-float-amount">+${rewards.xp || 1000}</div>
+        </div>
+    `;
+    
+    if (rewards.money && rewards.money > 0) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="https://i.ibb.co/N6GXqGpk/Money.png" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.money}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.diamond && rewards.diamond > 0) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.diamond}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.ability && rewards.ability !== 'null') {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="${abilitiesData[rewards.ability].img}" class="reward-float-img">
+                <div class="reward-float-amount">+1</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.crop && rewards.crop !== 'null') {
+        const cropData = allCrops.find(c => c.name === rewards.crop);
+        const amount = rewards.cropAmount || 1;
+        if (cropData) {
+            rewardHtml += `
+                <div class="reward-float-item">
+                    <img src="${cropData.img}" class="reward-float-img">
+                    <div class="reward-float-amount">+${amount}</div>
+                </div>
+            `;
+        }
+    }
+    
+    notification.innerHTML = `
+        <div class="task-complete-title">حصلت على</div>
+        <div class="rewards-float-container">${rewardHtml}</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 500);
+    }, 2000);
+}
+
+function showNewTaskNotification(taskDesc) {
+    const notification = document.createElement('div');
+    notification.className = 'task-new-notification';
+    notification.innerHTML = `
+        <div class="task-new-title">لديك مهمة جديدة</div>
+        <div class="task-new-desc">${taskDesc}</div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 500);
+    }, 2500);
+}
+
+setInterval(() => {
+    if (level < 5) return;
+    
+    if (currentTask && currentTask.check()) {
+        if (!currentTask.wasCompleted) {
+            currentTask.wasCompleted = true;
+            showNotify("تم إكمال المهمة");
+        }
+        renderTask();
+    }
+    
+    if (!currentTask) {
+        taskTimeLeft--;
+        updateTaskTimer();
+        
+        if (taskTimeLeft <= 0) {
+            currentTask = nextTask();
+            if (currentTask) {
+                renderTask();
+            }
+            taskTimeLeft = taskCooldown;
+        }
+    }
+}, 1000);
+
+// ==================== المزرعة ====================
+const grid = document.getElementById('mainGrid');    
+for (let i = 0; i < 20; i++) {    
+    const tile = document.createElement('div');    
+    tile.className = 'tile is-grass';    
+    tile.dataset.state = 'grass';    
+    tile.innerHTML = `    
+        <div class="layer layer-grass"></div>    
+        <div class="layer layer-soil"></div>    
+        <div class="layer layer-crop"></div>    
+        <div class="growth-timer-container">    
+            <div class="time-text"></div>    
+            <div class="progress-bar"><div class="progress-fill"></div></div>    
+        </div>`;    
+
+    tile.onclick = (e) => {    
+        e.stopPropagation();    
+        let s = tile.dataset.state;    
+
+        if (s === 'grass') {    
+            if (money >= 5) {    
+                money -= 5; updateUI();
+                stats.tilled++; 
+                addTaskTilled(1);
+                tile.classList.remove('is-grass'); tile.classList.add('is-soil');     
+                tile.dataset.state = 'soil';    
+                createFloatingText(tile, "-5", "#e74c3c");    
+            } else showNotify("ليس لديك المال الكافي لحرث الأرض!");    
+        }     
+        else if (s === 'soil') {    
+            let finalCost = applyEventToCropCost(selectedCrop.cost);
+            if (finalCost === 0 || money >= finalCost) {    
+                let p = selectedCrop; 
+                money -= finalCost; updateUI();
+                stats.planted++;     
+                stats.fav[p.name] = (stats.fav[p.name] || 0) + 1;    
+                addTaskPlanted(p.name, 1);
+                
+                startCropGrowth(tile, p);
+                tile.querySelector('.layer-crop').style.backgroundImage = `url(${p.img})`;    
+                createFloatingText(tile, `-${finalCost}`, "#e74c3c");    
+                
+            } else showNotify(`ليس لديك المال الكافي لزراعة ${selectedCrop.name}`);    
+        }     
+        else if (s === 'growing') { openGrowingInfo(tile); }     
+        else if (s === 'ready') {    
+            let pr = parseInt(tile.dataset.profit); 
+            let xpGain = parseInt(tile.dataset.cropXp) || 0;
+            let cropName = tile.dataset.cropName;
+            let cropImg = tile.dataset.cropImg;
             
-            <div class="back-btn" onclick="history.back()">
-                <img src="back.png" alt="Back">
-            </div>
-            <div class="title-section">
-                <div class="title" id="pageTitle">Gift Shop</div>           
-            </div>
-            <div class="limited-box">
-                <div class="limited-text" id="limitedText">Limited for days only</div>
-            </div>
-        </div>
-
-        <div class="scrollable-content">
-            <div class="container">
-                <div id="giftsList" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ===== قراءة العملات من رابط الصفحة =====
-        const urlParams = new URLSearchParams(window.location.search);
-        const moneyFromUrl = urlParams.get('money');
-        if (moneyFromUrl !== null && !isNaN(moneyFromUrl)) {
-            localStorage.setItem('playerMoney', parseInt(moneyFromUrl));
-        }
-
-        // ===== شاشة التحميل =====
-        const loadingFill = document.getElementById('loadingFill');
-        const loadingPercent = document.getElementById('loadingPercent');
-        const spinnerOverlay = document.getElementById('spinnerOverlay');
-        const appIcon = document.getElementById('appIcon');
-        const movingIcon = document.getElementById('movingIcon');
-        const containerRectTrack = document.getElementById('movingIconsContainer');
-        const loadingScreen = document.getElementById('loadingScreen');
-        const mainContent = document.getElementById('mainContent');
-
-        const resourcesToLoad = [
-            'https://i.ibb.co/VcT9m5xx/Gk6-N5q-EUl-VYR.gif',
-            'https://i.ibb.co/H0pYMzc/image.png',
-            'https://i.ibb.co/8LXXL88k/1780578850063.png',
-            'https://i.ibb.co/HD0mHFGR/1780693365700.png',
-            'https://i.ibb.co/tw563nkL/gift.gif',
-            'https://i.ibb.co/5gR875vF/1.jpg',
-            'https://i.ibb.co/DDMvMs05/image.gif',
-            'https://i.ibb.co/Xr8Yft1N/324-20260605233114.png',
-            'https://i.ibb.co/Qv036vbn/Gym-Jljha4-AAz-Q82.jpg',
-            'https://i.ibb.co/LDR687Yq/357-20260613173931.png',
-            'https://i.ibb.co/5XVh4BhP/eb4f93f68e0a4122a512290d2833e84c.gif',
-            'https://i.ibb.co/f8x3zYM/Ad.png',
-            'https://i.ibb.co/0RD5V0SD/August-taylor-8.jpg',
-            'https://i.ibb.co/HpRGGtgy/Brittany-Elizabeth-nude-190.jpg',
-            'https://i.ibb.co/Z6njCKdL/August-taylor-17.jpg',
-            'https://i.ibb.co/fcn74z9/Image-2026-05-04-13-01-14.jpg',
-            'https://i.ibb.co/9Hr2c643/05-26-59-506-512.gif'
-        ];
-
-        let totalResources = resourcesToLoad.length;
-        let loadedResources = 0;
-        let gifLoaded = false;
-
-        function updateIconPosition(percent) {
-            if (!containerRectTrack || !movingIcon) return;
-            const containerWidth = containerRectTrack.clientWidth;
-            const iconWidth = movingIcon.offsetWidth;
-            if (containerWidth <= 0 || iconWidth <= 0) return;
-            const maxTranslate = Math.max(0, containerWidth - iconWidth);
-            let translateX = (percent / 100) * maxTranslate;
-            movingIcon.style.transform = `translateX(${translateX}px)`;
-        }
-
-        function updateLoadingProgress() {
-            let percent = Math.floor((loadedResources / totalResources) * 100);
-            percent = Math.min(100, percent);
-            loadingFill.style.width = percent + '%';
-            loadingPercent.textContent = percent + '%';
-            updateIconPosition(percent);
+            let finalProfit = applyEventToCropProfit(pr);
+            let finalXP = applyEventToXP(xpGain);
             
-            if (loadedResources === totalResources && gifLoaded) {
-                setTimeout(() => {
-                    loadingScreen.classList.add('hide');
-                    mainContent.classList.add('show');
-                    initGiftShop();
-                }, 500);
+            stats.totalProfit += finalProfit;
+            addTaskMoney(finalProfit);
+            
+            let totalHarvest = 1;
+            let hasDoubleAbility = tile.dataset.doubleAbility === 'true';
+            
+            if (hasDoubleAbility) {
+                const random = Math.random() * 100;
+                if (random < 25) totalHarvest = 2;
+                else if (random < 50) totalHarvest = 3;
+                else if (random < 75) totalHarvest = 4;
+                else totalHarvest = 5;
+                delete tile.dataset.doubleAbility;
             }
+            
+            totalHarvest = applyDoubleCropEffect(cropName, totalHarvest);
+            
+            if (cropName && cropInventory[cropName] !== undefined) {
+                cropInventory[cropName] += totalHarvest;
+            }
+            
+            addTaskHarvest(totalHarvest);
+            let diamondEarned = applyDiamondChance();
+            
+            if (cropName === 'فاكهة الطاقة') {
+                let upgradedXP = getCropXPWithUpgrade(allCrops.find(c => c.name === cropName));
+                let finalUpgradedXP = applyEventToXP(upgradedXP);
+                currentXP += finalUpgradedXP;
+                addSeasonXP(finalUpgradedXP);
+                createFloatingTextWithCropAndCount(tile, cropImg, totalHarvest, `+${finalUpgradedXP} XP`, "#f1c40f", diamondEarned);
+            } else if (cropName === 'فاكهة ذهبية') {
+                currentXP += finalXP;
+                addSeasonXP(finalXP);
+                createFloatingTextWithCropAndCount(tile, cropImg, totalHarvest, `+${finalXP} XP`, "#f1c40f", diamondEarned);
+            } else {
+                currentXP += finalXP;
+                addSeasonXP(finalXP);
+                createFloatingTextWithCropAndCount(tile, cropImg, totalHarvest, `+${finalXP} XP`, "#f1c40f", diamondEarned);
+            }
+            
+            let req = getReqXP(level);    
+            while(currentXP >= req) { 
+                currentXP -= req; 
+                level++; 
+                req = getReqXP(level);
+                if (level % 5 === 0) showLevelUpUI(level);
+            }    
+            
+            tile.className = 'tile is-grass'; 
+            tile.dataset.state = 'grass';    
+            
+            removeGoldenGlow(tile);
+            tile.classList.remove('golden-soil');
+            tile.classList.remove('energy-soil');
+            
+            if (tile.growthInterval) {
+                clearInterval(tile.growthInterval);
+                delete tile.growthInterval;
+            }
+            
+            updateUI();
         }
+    };    
+    grid.appendChild(tile);    
+}    
 
-        function loadResource(url) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    loadedResources++;
-                    updateLoadingProgress();
-                    resolve();
-                };
-                img.onerror = () => {
-                    loadedResources++;
-                    updateLoadingProgress();
-                    resolve();
-                };
-                img.src = url;
-            });
-        }
-
-        appIcon.onload = function() {
-            gifLoaded = true;
-            appIcon.classList.add('show');
-            spinnerOverlay.classList.add('hide');
-            updateLoadingProgress();
-        };
-
-        appIcon.onerror = function() {
-            gifLoaded = true;
-            appIcon.classList.add('show');
-            spinnerOverlay.classList.add('hide');
-            updateLoadingProgress();
-        };
-
-        if (appIcon.complete) {
-            if (appIcon.naturalWidth > 0 && appIcon.naturalHeight > 0) {
-                gifLoaded = true;
-                appIcon.classList.add('show');
-                spinnerOverlay.classList.add('hide');
-                updateLoadingProgress();
-            }
-        }
-
-        async function startLoading() {
-            const loadPromises = resourcesToLoad.map(url => loadResource(url));
-            await Promise.all(loadPromises);
-        }
-
-        startLoading();
-
-        // ===== متجر الهدايا =====
-        function initGiftShop() {
-            // ===== الترجمات =====
-            const translations = {
-                en: {
-                    title: "Gift Shop",
-                    limitedText: "Limited for days only",
-                    purchaseTitle: "Purchase Icon",
-                    purchaseConfirm: (name, price, money) => `Buy ${name} for ${price} Money?\n\nYou have ${money} Money.`,
-                    purchaseSuccess: (name) => `✅ ${name} purchased successfully!`,
-                    notEnoughMoney: (price) => `❌ Not enough Money! Need ${price} Money.`,
-                    copySuccess: (code) => `✅ Code copied: ${code}`,
-                    copyFailed: "❌ Failed to copy",
-                    iconCode: "Icon code:",
-                    yes: "Yes",
-                    no: "No"
-                },
-                es: {
-                    title: "Tienda de Regalos",
-                    limitedText: "Limitado solo por días",
-                    purchaseTitle: "Comprar Icono",
-                    purchaseConfirm: (name, price, money) => `¿Comprar ${name} por ${price} Monedas?\n\nTienes ${money} Monedas.`,
-                    purchaseSuccess: (name) => `✅ ¡${name} comprado exitosamente!`,
-                    notEnoughMoney: (price) => `❌ ¡No hay suficientes Monedas! Necesitas ${price} Monedas.`,
-                    copySuccess: (code) => `✅ Código copiado: ${code}`,
-                    copyFailed: "❌ Error al copiar",
-                    iconCode: "Código del icono:",
-                    yes: "Sí",
-                    no: "No"
-                },
-                fr: {
-                    title: "Boutique de Cadeaux",
-                    limitedText: "Limité pour quelques jours seulement",
-                    purchaseTitle: "Acheter Icône",
-                    purchaseConfirm: (name, price, money) => `Acheter ${name} pour ${price} Pièces?\n\nVous avez ${money} Pièces.`,
-                    purchaseSuccess: (name) => `✅ ${name} acheté avec succès!`,
-                    notEnoughMoney: (price) => `❌ Pas assez de Pièces! Besoin de ${price} Pièces.`,
-                    copySuccess: (code) => `✅ Code copié: ${code}`,
-                    copyFailed: "❌ Échec de la copie",
-                    iconCode: "Code d'icône:",
-                    yes: "Oui",
-                    no: "Non"
-                },
-                it: {
-                    title: "Negozio Regali",
-                    limitedText: "Limitato solo per giorni",
-                    purchaseTitle: "Acquista Icona",
-                    purchaseConfirm: (name, price, money) => `Acquistare ${name} per ${price} Monete?\n\nHai ${money} Monete.`,
-                    purchaseSuccess: (name) => `✅ ${name} acquistato con successo!`,
-                    notEnoughMoney: (price) => `❌ Monete insufficienti! Servono ${price} Monete.`,
-                    copySuccess: (code) => `✅ Codice copiato: ${code}`,
-                    copyFailed: "❌ Copia fallita",
-                    iconCode: "Codice icona:",
-                    yes: "Sì",
-                    no: "No"
-                },
-                de: {
-                    title: "Geschenkeladen",
-                    limitedText: "Nur für wenige Tage limitiert",
-                    purchaseTitle: "Icon Kaufen",
-                    purchaseConfirm: (name, price, money) => `${name} für ${price} Münzen kaufen?\n\nDu hast ${money} Münzen.`,
-                    purchaseSuccess: (name) => `✅ ${name} erfolgreich gekauft!`,
-                    notEnoughMoney: (price) => `❌ Nicht genug Münzen! Benötigt ${price} Münzen.`,
-                    copySuccess: (code) => `✅ Code kopiert: ${code}`,
-                    copyFailed: "❌ Kopieren fehlgeschlagen",
-                    iconCode: "Icon-Code:",
-                    yes: "Ja",
-                    no: "Nein"
-                }
-            };
-
-            let currentLang = localStorage.getItem('gameLang') || 'en';
-
-            function t(key, ...args) {
-                let text = translations[currentLang][key] || translations['en'][key];
-                if (typeof text === 'function') {
-                    return text(...args);
-                }
-                return text;
-            }
-
-            function updatePageLanguage() {
-                document.getElementById('pageTitle').textContent = t('title');
-                document.getElementById('limitedText').textContent = t('limitedText');
-            }
-
-            // ===== الصور المتساقطة =====
-            const giftImages = ['G1.png', 'G2.png', 'G3.png'];
-            let fallingInterval = null;
-
-            function createFallingGift() {
-                const container = document.getElementById('fallingGiftsContainer');
-                if (!container) return;
-                
-                const gift = document.createElement('div');
-                gift.className = 'falling-gift';
-                
-                const randomImage = giftImages[Math.floor(Math.random() * giftImages.length)];
-                gift.style.backgroundImage = `url('${randomImage}')`;
-                
-                const size = 25 + Math.random() * 25;
-                gift.style.width = `${size}px`;
-                gift.style.height = `${size}px`;
-                
-                const leftPos = Math.random() * 100;
-                gift.style.left = `${leftPos}%`;
-                
-                const duration = 3 + Math.random() * 4;
-                gift.style.animationDuration = `${duration}s`;
-                
-                const delay = Math.random() * 2;
-                gift.style.animationDelay = `${delay}s`;
-                
-                container.appendChild(gift);
-                
-                setTimeout(() => {
-                    if (gift && gift.parentNode) {
-                        gift.parentNode.removeChild(gift);
-                    }
-                }, (duration + delay) * 1000);
-            }
-
-            function startFallingGifts() {
-                if (fallingInterval) clearInterval(fallingInterval);
-                fallingInterval = setInterval(() => {
-                    const count = Math.floor(Math.random() * 3) + 1;
-                    for (let i = 0; i < count; i++) {
-                        createFallingGift();
-                    }
-                }, 800);
-            }
-
-            startFallingGifts();
-
-            window.addEventListener('beforeunload', () => {
-                if (fallingInterval) clearInterval(fallingInterval);
-            });
-
-            // ===== ربط العملات =====
-            function getPlayerMoney() {
-                return parseInt(localStorage.getItem('playerMoney') || 0);
-            }
-
-            function setPlayerMoney(amount) {
-                localStorage.setItem('playerMoney', amount);
-                // تحديث الصفحة الأم إذا كانت موجودة
-                if (window.opener && !window.opener.closed) {
-                    window.opener.localStorage.setItem('playerMoney', amount);
-                    if (window.opener.updateMoneyDisplay) {
-                        window.opener.updateMoneyDisplay();
-                    }
-                }
-            }
-
-            function deductPlayerMoney(amount) {
-                const current = getPlayerMoney();
-                if (current >= amount) {
-                    const newAmount = current - amount;
-                    localStorage.setItem('playerMoney', newAmount);
-                    // تحديث الصفحة الأم
-                    if (window.opener && !window.opener.closed) {
-                        window.opener.localStorage.setItem('playerMoney', newAmount);
-                        if (window.opener.updateMoneyDisplay) {
-                            window.opener.updateMoneyDisplay();
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            }
-
-            // ===== رسالة منبثقة =====
-            let currentToast = null;
-            let toastTimeout = null;
-
-            function showToast(message) {
-                if (currentToast) {
-                    currentToast.classList.add('fade-out');
-                    if (toastTimeout) clearTimeout(toastTimeout);
-                    setTimeout(() => {
-                        if (currentToast && currentToast.parentNode) {
-                            currentToast.parentNode.removeChild(currentToast);
-                        }
-                        currentToast = null;
-                        createNewToast(message);
-                    }, 200);
+// ==================== إعادة بناء قائمة المحاصيل ====================
+function rebuildCropMenu() {
+    const cropMenu = document.getElementById('cropMenu');
+    cropMenu.innerHTML = '';
+    allCrops.forEach(crop => {
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `<img src="${crop.img}" alt="${crop.name}"><div class="crop-label"><span class="crop-name">${crop.name}</span></div>`;
+        div.onclick = (e) => {
+            e.stopPropagation();
+            pendingCrop = crop;
+            currentInfoCrop = crop;
+            document.getElementById('infoImg').src = crop.img;
+            document.getElementById('infoName').textContent = crop.name;
+            let level = cropUpgradeLevels[crop.name] || 1;
+            const levelBadge = document.getElementById('infoLevel');
+            
+            if (crop.name === 'فاكهة ذهبية' || crop.name === 'فاكهة الطاقة') {
+                levelBadge.textContent = "المستوى الأقصى";
+                levelBadge.classList.add('max-level');
+            } else {
+                levelBadge.textContent = getLevelText(level, crop.name);
+                if (level >= MAX_CROP_LEVEL) {
+                    levelBadge.classList.add('max-level');
                 } else {
-                    createNewToast(message);
+                    levelBadge.classList.remove('max-level');
                 }
             }
-
-            function createNewToast(message) {
-                currentToast = document.createElement('div');
-                currentToast.className = 'toast-message';
-                currentToast.textContent = message;
-                document.body.appendChild(currentToast);
-                
-                toastTimeout = setTimeout(() => {
-                    if (currentToast) {
-                        currentToast.classList.add('fade-out');
-                        setTimeout(() => {
-                            if (currentToast && currentToast.parentNode) {
-                                currentToast.parentNode.removeChild(currentToast);
-                            }
-                            currentToast = null;
-                        }, 200);
-                    }
-                }, 2000);
+            
+            let finalCost = applyEventToCropCost(crop.cost);
+            if (finalCost === 0) {
+                document.getElementById('infoCost').innerHTML = `مجاني`;
+            } else {
+                document.getElementById('infoCost').innerHTML = `<img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:30px; vertical-align:middle;"> ${finalCost}`;
             }
-
-            // ===== نافذة تأكيد الشراء =====
-            function showPurchaseConfirm(giftName, price, onConfirm) {
-                let confirmModal = document.getElementById('purchaseConfirmModal');
-                if (!confirmModal) {
-                    confirmModal = document.createElement('div');
-                    confirmModal.id = 'purchaseConfirmModal';
-                    confirmModal.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0,0,0,0.7);
-                        z-index: 4000;
-                        display: none;
-                        align-items: center;
-                        justify-content: center;
-                        backdrop-filter: blur(5px);
-                    `;
-                    confirmModal.innerHTML = `
-                        <div style="background: white; width: 85%; max-width: 300px; border-radius: 25px; padding: 25px 20px; text-align: center;">
-                            <div id="purchaseConfirmTitle" style="font-family: 'Jua', cursive; font-size: 1.2rem; color: #FF8F00; margin-bottom: 15px;">Purchase Icon</div>
-                            <div id="purchaseConfirmMessage" style="font-size: 14px; color: #333; margin-bottom: 20px;"></div>
-                            <div style="display: flex; gap: 15px; justify-content: center;">
-                                <button id="purchaseConfirmYes" style="background-color: #00FF00; color: black; border: 2px solid #000; padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1;">Yes</button>
-                                <button id="purchaseConfirmNo" style="background-color: #FF5252; color: white; border: 2px solid #000; padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1;">No</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(confirmModal);
-                    
-                    document.getElementById('purchaseConfirmYes').onclick = () => {
-                        confirmModal.style.display = 'none';
-                        if (window.pendingConfirm) {
-                            window.pendingConfirm(true);
-                            window.pendingConfirm = null;
-                        }
-                    };
-                    document.getElementById('purchaseConfirmNo').onclick = () => {
-                        confirmModal.style.display = 'none';
-                        if (window.pendingConfirm) {
-                            window.pendingConfirm(false);
-                            window.pendingConfirm = null;
-                        }
-                    };
+            
+            let profit = getCropProfitWithUpgrade(crop);
+            if (profit === 0) {
+                document.getElementById('infoProfit').innerHTML = `بلا ربح`;
+            } else {
+                document.getElementById('infoProfit').innerHTML = `<img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:30px; vertical-align:middle;"> ${profit}`;
+            }
+            
+            let xpValue = getCropXPWithUpgrade(crop);
+            if (xpValue === 0) {
+                document.getElementById('infoXP').innerHTML = `لا نقاط`;
+            } else {
+                document.getElementById('infoXP').innerHTML = `<img src="https://i.ibb.co/8gf9nWHd/XP.png" style="width:30px; vertical-align:middle;"> ${xpValue}`;
+            }
+            
+            let finalTime = applyEventToCropTime(crop.time);
+            let timeLabel = crop.timeLabel;
+            if (finalTime !== crop.time) {
+                const hours = Math.floor(finalTime / 3600);
+                const minutes = Math.floor((finalTime % 3600) / 60);
+                const seconds = Math.floor(finalTime % 60);
+                if (hours > 0) {
+                    timeLabel = `${hours}h ${minutes}m`;
+                } else if (minutes > 0) {
+                    timeLabel = `${minutes}m ${seconds}s`;
+                } else {
+                    timeLabel = `${seconds}s`;
                 }
-                
-                const titleEl = document.getElementById('purchaseConfirmTitle');
-                const messageEl = document.getElementById('purchaseConfirmMessage');
-                const playerMoney = getPlayerMoney();
-                
-                titleEl.textContent = t('purchaseTitle');
-                messageEl.innerHTML = t('purchaseConfirm', giftName, price, playerMoney).replace(/\n/g, '<br>');
-                
-                const yesBtn = document.getElementById('purchaseConfirmYes');
-                const noBtn = document.getElementById('purchaseConfirmNo');
-                yesBtn.textContent = t('yes');
-                noBtn.textContent = t('no');
-                
-                confirmModal.style.display = 'flex';
-                
-                window.pendingConfirm = onConfirm;
             }
-
-            // ===== وظيفة نسخ النص =====
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast(t('copySuccess', text));
-                }).catch(() => {
-                    showToast(t('copyFailed'));
-                });
-            }
-
-            // بيانات الهدايا
-            const giftsData = [
-                { id: 1, squareImg: "https://i.ibb.co/5gR875vF/1.jpg", name: "Golden Pack", price: 10, iconCode: "GIFT-10-GOLD" },
-                { id: 2, squareImg: "https://i.ibb.co/5XVh4BhP/eb4f93f68e0a4122a512290d2833e84c.gif", name: "Diamond Pack", price: 20, iconCode: "GIFT-20-DIAMOND" },
-                { id: 3, squareImg: "https://i.ibb.co/f8x3zYM/Ad.png", name: "Silver Pack", price: 30, iconCode: "GIFT-30-SILVER" },
-                { id: 4, squareImg: "https://i.ibb.co/0RD5V0SD/August-taylor-8.jpg", name: "Premium Pack", price: 40, iconCode: "GIFT-40-PREMIUM" },
-                { id: 5, squareImg: "https://i.ibb.co/HpRGGtgy/Brittany-Elizabeth-nude-190.jpg", name: "Exclusive Pack", price: 50, iconCode: "GIFT-50-EXCLUSIVE" },
-                { id: 6, squareImg: "https://i.ibb.co/Z6njCKdL/August-taylor-17.jpg", name: "Rare Pack", price: 60, iconCode: "GIFT-60-RARE" },
-                { id: 7, squareImg: "https://i.ibb.co/fcn74z9/Image-2026-05-04-13-01-14.jpg", name: "Legendary Pack", price: 75, iconCode: "GIFT-75-LEGEND" },
-                { id: 8, squareImg: "https://i.ibb.co/9Hr2c643/05-26-59-506-512.gif", name: "Mystery Pack", price: 100, iconCode: "GIFT-100-MYSTERY" },
-                { id: 9, squareImg: "aa.png", name: "Mysty Pack", price: 300, iconCode: "GIFTYSTERY" }
-            ];
-
-            let unlockedStatus = JSON.parse(localStorage.getItem('giftShopUnlocked') || '{}');
-
-            function renderGifts() {
-                const container = document.getElementById('giftsList');
-                if (!container) return;
-                container.innerHTML = '';
+            document.getElementById('infoTime').innerHTML = `<img src="https://i.ibb.co/VYVzG45K/Timer.png" style="width:30px; vertical-align:middle;"> ${timeLabel}`;
+            
+            const upgradeBtn = document.getElementById('upgradeInfoBtn');
+            const upgradePriceSpan = document.getElementById('infoUpgradePrice');
+            
+            if (crop.name === 'فاكهة ذهبية' || crop.name === 'فاكهة الطاقة') {
+                upgradeBtn.style.display = 'none';
+            } else {
+                upgradeBtn.style.display = 'flex';
                 
-                giftsData.forEach(gift => {
-                    const isUnlocked = unlockedStatus[gift.id] === true;
-                    
-                    const giftDiv = document.createElement('div');
-                    giftDiv.className = 'gift-item';
-                    
-                    const squareDiv = document.createElement('div');
-                    squareDiv.className = 'square-box';
-                    
-                    const innerDiv = document.createElement('div');
-                    innerDiv.className = 'square-box-inner';
-                    const squareImg = document.createElement('img');
-                    squareImg.src = gift.squareImg;
-                    squareImg.alt = gift.name;
-                    innerDiv.appendChild(squareImg);
-                    squareDiv.appendChild(innerDiv);
-                    
-                    const rectDiv = document.createElement('div');
-                    rectDiv.className = 'rectangle-box';
-                    
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = 'rectangle-content';
-                    
-                    if (!isUnlocked) {
-                        const priceContainer = document.createElement('div');
-                        priceContainer.className = 'price-container';
-                        
-                        const priceSpan = document.createElement('span');
-                        priceSpan.className = 'price-text';
-                        priceSpan.textContent = `${gift.price}`;
-                        
-                        const coinImg = document.createElement('img');
-                        coinImg.src = 'coin.png';
-                        coinImg.alt = 'coin';
-                        coinImg.className = 'coin-icon';
-                        
-                        priceContainer.appendChild(priceSpan);
-                        priceContainer.appendChild(coinImg);
-                        contentDiv.appendChild(priceContainer);
-                        rectDiv.appendChild(contentDiv);
-                        
-                        rectDiv.onclick = (e) => {
-                            e.stopPropagation();
-                            const playerMoney = getPlayerMoney();
-                            if (playerMoney >= gift.price) {
-                                showPurchaseConfirm(gift.name, gift.price, (confirmed) => {
-                                    if (confirmed) {
-                                        deductPlayerMoney(gift.price);
-                                        unlockedStatus[gift.id] = true;
-                                        localStorage.setItem('giftShopUnlocked', JSON.stringify(unlockedStatus));
-                                        renderGifts();
-                                        showToast(t('purchaseSuccess', gift.name));
-                                    }
-                                });
-                            } else {
-                                showToast(t('notEnoughMoney', gift.price));
-                            }
-                        };
-                    } else {
-                        const codeContainer = document.createElement('div');
-                        codeContainer.className = 'code-container';
-                        
-                        const labelSpan = document.createElement('div');
-                        labelSpan.className = 'code-label';
-                        labelSpan.textContent = t('iconCode');
-                        
-                        const codeSpan = document.createElement('div');
-                        codeSpan.className = 'code-value';
-                        codeSpan.textContent = gift.iconCode;
-                        
-                        codeContainer.appendChild(labelSpan);
-                        codeContainer.appendChild(codeSpan);
-                        contentDiv.appendChild(codeContainer);
-                        rectDiv.appendChild(contentDiv);
-                        
-                        rectDiv.onclick = (e) => {
-                            e.stopPropagation();
-                            copyToClipboard(gift.iconCode);
-                        };
-                        rectDiv.style.cursor = 'pointer';
-                    }
-                    
-                    giftDiv.appendChild(squareDiv);
-                    giftDiv.appendChild(rectDiv);
-                    
-                    container.appendChild(giftDiv);
-                });
+                if (level >= MAX_CROP_LEVEL) {
+                    upgradeBtn.classList.add('max-level');
+                    upgradePriceSpan.parentElement.style.display = 'none';
+                } else {
+                    upgradeBtn.classList.remove('max-level');
+                    upgradePriceSpan.parentElement.style.display = 'flex';
+                    upgradePriceSpan.textContent = 500;
+                }
             }
+            
+            const overlay = document.getElementById('infoOverlay');
+            overlay.classList.add('active');
+            
+            const btn = document.getElementById('useBtn');
+            btn.className = (selectedCrop.id === crop.id) ? 'use-btn selected' : 'use-btn';
+            btn.innerText = (selectedCrop.id === crop.id) ? 'مستخدم' : 'استخدام';
+        };
+        cropMenu.appendChild(div);
+    });
+}
 
-            updatePageLanguage();
-            renderGifts();
+rebuildCropMenu();
+
+function confirmSelection() { selectedCrop = pendingCrop; closeInfo(); document.getElementById('selector').classList.remove('active'); }    
+
+function upgradeFromInfo() {
+    if (!currentInfoCrop) return;
+    
+    if (currentInfoCrop.name === 'فاكهة ذهبية' || currentInfoCrop.name === 'فاكهة الطاقة') {
+        showNotify("هذا المحصول غير قابل للترقية!");
+        return;
+    }
+    
+    let currentLevel = cropUpgradeLevels[currentInfoCrop.name] || 1;
+    
+    if (currentLevel >= MAX_CROP_LEVEL) {
+        showNotify(`لقد وصل هذا المحصول إلى أقصى مستوى! (${MAX_CROP_LEVEL - 1}/10)`);
+        return;
+    }
+    
+    let price = 500;
+    if (diamonds >= price) {
+        diamonds -= price;
+        cropUpgradeLevels[currentInfoCrop.name] = currentLevel + 1;
+        updateUI();
+        
+        let profit = getCropProfitWithUpgrade(currentInfoCrop);
+        if (profit === 0) {
+            document.getElementById('infoProfit').innerHTML = `بلا ربح`;
+        } else {
+            document.getElementById('infoProfit').innerHTML = `<img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:30px; vertical-align:middle;"> ${profit}`;
         }
-    </script>
-</body>
-</html>
+        
+        let xpValue = getCropXPWithUpgrade(currentInfoCrop);
+        if (xpValue === 0) {
+            document.getElementById('infoXP').innerHTML = `لا نقاط`;
+        } else {
+            document.getElementById('infoXP').innerHTML = `<img src="https://i.ibb.co/8gf9nWHd/XP.png" style="width:30px; vertical-align:middle;"> ${xpValue}`;
+        }
+        
+        let newLevel = cropUpgradeLevels[currentInfoCrop.name];
+        const levelBadge = document.getElementById('infoLevel');
+        levelBadge.textContent = getLevelText(newLevel, currentInfoCrop.name);
+        
+        if (newLevel >= MAX_CROP_LEVEL) {
+            levelBadge.classList.add('max-level');
+        } else {
+            levelBadge.classList.remove('max-level');
+        }
+        
+        const upgradeBtn = document.getElementById('upgradeInfoBtn');
+        const upgradePriceSpan = document.getElementById('infoUpgradePrice');
+        
+        if (newLevel >= MAX_CROP_LEVEL) {
+            upgradeBtn.classList.add('max-level');
+            upgradePriceSpan.parentElement.style.display = 'none';
+        } else {
+            upgradeBtn.classList.remove('max-level');
+            upgradePriceSpan.parentElement.style.display = 'flex';
+            upgradePriceSpan.textContent = 500;
+        }
+        
+        renderTraderGrid();
+        showNotify(`تم ترقية ${currentInfoCrop.name} إلى ${getLevelText(newLevel, currentInfoCrop.name)}!`);
+    } else {
+        showNotify(`ليس لديك ألماس كافٍ! تحتاج ${price} ألماس`);
+    }
+}
+
+function toggleInfo(e) { 
+    e.stopPropagation(); 
+    openProfileModal();
+}
+
+function toggleMenu(e) { e.stopPropagation(); document.getElementById('selector').classList.toggle('active'); }    
+
+function closeInfo() { 
+    const overlay = document.getElementById('infoOverlay');
+    overlay.classList.remove('active');
+}    
+
+function closeExternal(e) { 
+    document.getElementById('selector').classList.remove('active'); 
+    closeInfo();
+    closeProfileModal();
+}    
+
+// ==================== نافذة الملف الشخصي ====================
+function openProfileModal() {
+    const overlay = document.getElementById('profileModal');
+    updateProfileModal();
+    overlay.classList.add('active');
+}
+
+function closeProfileModal() {
+    const overlay = document.getElementById('profileModal');
+    overlay.classList.remove('active');
+}
+
+function switchProfileTab(tab) {
+    document.querySelectorAll('.profile-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (tab === 'profile') {
+        document.querySelector('.profile-tab-btn:first-child').classList.add('active');
+        document.getElementById('profileTab').classList.add('active');
+        document.getElementById('statsTab').classList.remove('active');
+    } else {
+        document.querySelector('.profile-tab-btn:last-child').classList.add('active');
+        document.getElementById('statsTab').classList.add('active');
+        document.getElementById('profileTab').classList.remove('active');
+    }
+}
+
+function updateProfileModal() {
+    let req = getReqXP(level);
+    document.getElementById('modalExpFill').style.width = (currentXP / req * 100) + "%";
+    document.getElementById('modalLvlDisplay').textContent = "Lv." + level;
+    document.getElementById('modalStatTilled').textContent = stats.tilled;
+    document.getElementById('modalStatTotalProfit').textContent = stats.totalProfit;
+    document.getElementById('modalPlayTime').textContent = getPlayTimeDisplay();
+    document.getElementById('currentTitle').textContent = currentTitle;
+    
+    let best = "---", max = 0;
+    for(let k in stats.fav) if(stats.fav[k] > max) { max = stats.fav[k]; best = k; }
+    document.getElementById('modalStatFav').textContent = best;
+}
+
+// تحديث المدة كل ثانية عند فتح النافذة
+setInterval(() => {
+    if (document.getElementById('profileModal').classList.contains('active')) {
+        document.getElementById('modalPlayTime').textContent = getPlayTimeDisplay();
+    }
+}, 1000);
+
+// ==================== الفلاح ====================
+const farmer = document.getElementById('farmer');    
+function moveFarmer() {    
+    if (farmer.classList.contains('attacking')) return;    
+    const gridRect = document.getElementById('mainGrid').getBoundingClientRect();    
+    const container = document.querySelector('.game-container').getBoundingClientRect();    
+    const currentX = parseFloat(farmer.style.left) || (gridRect.left - container.left);    
+    const currentY = parseFloat(farmer.style.top) || (gridRect.top - container.top);    
+    const nextX = Math.random() * (gridRect.width - 60) + (gridRect.left - container.left);    
+    const nextY = Math.random() * (gridRect.height - 60) + (gridRect.top - container.top);    
+    const angle = Math.atan2(nextY - currentY, nextX - currentX) * (180 / Math.PI) + 90;    
+    farmer.style.transform = `rotate(${angle}deg)`;    
+    farmer.classList.add('is-walking');    
+    farmer.style.left = `${nextX}px`;    
+    farmer.style.top = `${nextY}px`;    
+    setTimeout(() => { farmer.classList.remove('is-walking'); }, 2500);     
+}    
+setInterval(moveFarmer, 5000);    
+moveFarmer();    
+farmer.onclick = (e) => { e.stopPropagation(); openFarmerTasks(); };    
+
+function initCarMovement() {    
+    const car = document.getElementById('car');    
+    if (!car) return;    
+    let direction = 'to-right';     
+    function drive() {    
+        let screenWidth = window.innerWidth;    
+        if (direction === 'to-right') {    
+            car.style.transform = "scaleX(1)";     
+            let pos = -150;    
+            const t = setInterval(() => { pos += 5; car.style.left = pos + 'px'; if (pos > screenWidth + 150) { clearInterval(t); direction = 'to-left'; setTimeout(drive, 1000); } }, 30);    
+        } else {    
+            car.style.transform = "scaleX(-1)";     
+            let pos = screenWidth + 150;    
+            const t = setInterval(() => { pos -= 5; car.style.left = pos + 'px'; if (pos < -150) { clearInterval(t); direction = 'to-right'; setTimeout(drive, 1000); } }, 30);    
+        }    
+    }    
+    drive();    
+}    
+initCarMovement();    
+
+// ==================== الإنجازات ====================
+const LOCK_IMG = "https://i.ibb.co/39VjJxwx/lock-icon-29059.png";
+const DONE_IMG = "https://i.ibb.co/XfxSJh3D/Pngtree-green-correct-icon-5986819.png";
+const CUP_IMG = "https://i.ibb.co/Rkj6ZzmX/Cup.png";
+
+const MEDAL_BRONZE = 'https://i.ibb.co/0yrKtqc1/Bronze.png';
+const MEDAL_SILVER = 'https://i.ibb.co/s9ZHTrMh/Silver.png';
+const MEDAL_GOLD = 'https://i.ibb.co/gMnKRMzy/Gold.png';
+const MEDAL_LOCKED = 'https://i.ibb.co/Fb24c1qG/Locked.png';
+
+const achievements = [
+    { id: 1, title: "خبير القمح", reqs: [1, 2, 3], type: "crop", crop: "قمح", img: 'https://i.ibb.co/HTTNdRkP/wheat.png' },
+    { id: 2, title: "خبير الذرة", reqs: [100, 200, 300], type: "crop", crop: "ذرة", img: 'https://i.ibb.co/67RPHStB/corn.png' },
+    { id: 3, title: "خبير الطماطم", reqs: [100, 200, 300], type: "crop", crop: "طماطم", img: 'https://i.ibb.co/WpMcRBFD/tomatoes.png' },
+    { id: 4, title: "خبير البطاطا", reqs: [100, 200, 300], type: "crop", crop: "بطاطا", img: 'https://i.ibb.co/wNznZ239/potatoes.png' },
+    { id: 5, title: "خبير الجزر", reqs: [100, 200, 300], type: "crop", crop: "جزر", img: 'https://i.ibb.co/Ldm1M39x/carrot.png' },
+    { id: 6, title: "خبير الباذنجان", reqs: [100, 200, 300], type: "crop", crop: "باذنجان", img: 'https://i.ibb.co/PvVmPj4Q/eggplant.png' },
+    { id: 7, title: "خبير الخيار", reqs: [100, 200, 300], type: "crop", crop: "خيار", img: 'https://i.ibb.co/0jVwdxGT/cucumber.png' },
+    { id: 8, title: "خبير البروكلي", reqs: [100, 200, 300], type: "crop", crop: "بروكلي", img: 'https://i.ibb.co/S4k8BQDT/broccoli.png' },
+    { id: 9, title: "خبير الفلفل", reqs: [100, 200, 300], type: "crop", crop: "فلفل", img: 'https://i.ibb.co/B5bpYf0h/Pepper.png' },
+    { id: 10, title: "خبير الفراولة", reqs: [1000, 2000, 5000], type: "crop", crop: "فراولة", img: 'https://i.ibb.co/93Vzw8gp/Strawberry.png' },
+    { id: 11, title: "خبير العنب", reqs: [1000, 2000, 5000], type: "crop", crop: "عنب", img: 'https://i.ibb.co/wXXGJpd/grapes.png' },
+    { id: 12, title: "خبير الرمان", reqs: [1000, 2000, 5000], type: "crop", crop: "رمان", img: 'https://i.ibb.co/Pzbd4vMZ/pomegranate.png' },
+    { id: 13, title: "خبير المانجو", reqs: [1000, 2000, 5000], type: "crop", crop: "مانجو", img: 'https://i.ibb.co/QjfmCPw2/mango.png' },
+    { id: 14, title: "خبير البطيخ", reqs: [1000, 2000, 5000], type: "crop", crop: "بطيخ", img: 'https://i.ibb.co/KYhqzX6/watermelon.png' },
+    { id: 15, title: "خبير اليقطين", reqs: [1000, 2000, 5000], type: "crop", crop: "يقطين", img: 'https://i.ibb.co/RT96VT9g/pumpkin.png' },
+    { id: 23, title: "سيد الحبوب", reqs: [100, 300, 500], type: "grainMix", img: 'https://i.ibb.co/HTTNdRkP/wheat.png' },
+    { id: 24, title: "سيد الخضروات", reqs: [200, 500, 1000], type: "vegMix", img: 'https://i.ibb.co/WpMcRBFD/tomatoes.png' },
+    { id: 25, title: "سيد الفواكه", reqs: [100, 250, 500], type: "fruitMix", img: 'https://i.ibb.co/93Vzw8gp/Strawberry.png' },
+    { id: 26, title: "سيد المحاصيل الخارقة", reqs: [5, 15, 30], type: "superCropMix", img: 'https://i.ibb.co/W49Xsx6j/1775296771569.png' },
+    { id: 16, title: "مربي الدجاج", reqs: [25, 50, 100], type: "animal", animal: "chicken", img: 'https://i.ibb.co/HLYVyCCs/1773538709459.png' },
+    { id: 17, title: "مربي الأبقار", reqs: [25, 50, 100], type: "animal", animal: "cow", img: 'https://i.ibb.co/2pjfjbN/1773535366742.png' },
+    { id: 18, title: "مربي الأغنام", reqs: [25, 50, 100], type: "animal", animal: "sheep", img: 'https://i.ibb.co/B5cmqGDp/1773535777794.png' },
+    { id: 19, title: "تاجر البيض", reqs: [1000, 3000, 5000], type: "sell", product: "chicken", img: 'https://i.ibb.co/gbMXS0Yg/Egg.png' },
+    { id: 20, title: "تاجر الحليب", reqs: [1000, 3000, 5000], type: "sell", product: "cow", img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png' },
+    { id: 21, title: "تاجر الصوف", reqs: [1000, 3000, 5000], type: "sell", product: "sheep", img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png' },
+    { id: 22, title: "بطل المهام", reqs: [5, 8, 12], type: "tasks", img: 'https://i.ibb.co/GftLRV0N/1769511897443.png' },
+    { id: 27, title: "المزارع الماهر", reqs: [1000, 5000, 10000], type: "plantedTotal", img: 'https://i.ibb.co/ksTn9VHv/1769368917723.png' },
+    { id: 28, title: "حارث الحقول", reqs: [100, 300, 500], type: "tilled", img: 'https://i.ibb.co/1000191306.png' },
+    { id: 29, title: "المتطور", reqs: [5, 15, 30], type: "level", img: 'https://i.ibb.co/0RzGnfN1/Apple.png' },
+    { id: 31, title: "صانع الألماس", reqs: [1000, 5000, 10000], type: "craftDiamond", img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png' },
+    { id: 30, title: "التاجر الثري", reqs: [10000, 100000, 1000000], type: "sellProfit", img: 'https://i.ibb.co/N6GXqGpk/Money.png' }
+];
+
+let achievementRewardsCollected = {};
+
+function initAchievementRewards() {
+    achievements.forEach(a => {
+        const key = `${a.id}`;
+        if (!achievementRewardsCollected[key]) {
+            achievementRewardsCollected[key] = {};
+        }
+    });
+}
+initAchievementRewards();
+
+const levelRewardsDiamonds = { 1: 50, 2: 100, 3: 200 };
+
+function getAchievementLevel(progress, reqs) {
+    if (progress >= reqs[2]) return 3;
+    if (progress >= reqs[1]) return 2;
+    if (progress >= reqs[0]) return 1;
+    return 0;
+}
+
+function getMedalIcon(level) {
+    switch(level) {
+        case 1: return MEDAL_BRONZE;
+        case 2: return MEDAL_SILVER;
+        case 3: return MEDAL_GOLD;
+        default: return MEDAL_LOCKED;
+    }
+}
+
+function getProgressText(progress, reqs, level) {
+    if (level === 3) return "مكتمل";
+    if (level === 2) return `${progress} / ${reqs[2]}`;
+    if (level === 1) return `${progress} / ${reqs[1]}`;
+    return `${progress} / ${reqs[0]}`;
+}
+
+function getAchievementDescription(achievement) {
+    switch(achievement.type) {
+        case 'crop': return ` ازرع محصول ${achievement.crop} لتحقق هذا الإنجاز `;
+        case 'animal': return `قم بترقية هذا الحيوان في الحضيرة لتحقق هذا الإنجاز`;
+        case 'sell': return `قم ببيع المنتج لتحقق هذا الإنجاز `;
+        case 'tasks': return `ساعد المزارع في اكمال المهام لتحقق هذا الإنجاز`;
+        case 'level': return `قم بزيادة مستواك في اللعبة لتحقق هذا الإنجاز`;
+        case 'sellProfit': return `إجمالي أرباح بيع المحاصيل والمنتجات`;
+        case 'tilled': return `قم بحراثة قطع الاراضي لتحقق هذا الإنجاز`;
+        case 'plantedTotal': return `قم بزراعة اي محصول لتحقق هذا الإنجاز`;
+        case 'grainMix': return `ازرع محاصيل الحبوب لتحقق هذا الإنجاز`;
+        case 'vegMix': return `ازرع محاصيل الخضروات لتحقق هذا الإنجاز`;
+        case 'fruitMix': return `ازرع محاصيل الفواكه لتحقق هذا الإنجاز`;
+        case 'superCropMix': return `ازرع المحاصيل الخارقة لتحقق هذا الإنجاز`;
+        case 'craftDiamond': return `قم بصناعة الألماس في مكينة الألماس لتحقق هذا الإنجاز`;
+        default: return 'تقدم الإنجاز';
+    }
+}
+
+function getAchievementProgressValue(a) {
+    switch(a.type){
+        case "plantedTotal": return stats.planted;
+        case "crop": return stats.fav[a.crop] || 0;
+        case "tilled": return stats.tilled;
+        case "money": return stats.totalProfit;
+        case "level": return level;
+        case "sellProfit": return totalSellProfit; 
+        case "craftDiamond": return totalDiamondsCrafted; 
+        case "grainMix": return (stats.fav["قمح"]||0) + (stats.fav["ذرة"]||0);
+        case "vegMix": return (stats.fav["طماطم"]||0) + (stats.fav["بطاطا"]||0) + (stats.fav["جزر"]||0) + 
+                              (stats.fav["باذنجان"]||0) + (stats.fav["خيار"]||0) + (stats.fav["بروكلي"]||0) +
+                              (stats.fav["فلفل"]||0);
+        case "fruitMix": return (stats.fav["فراولة"]||0) + (stats.fav["عنب"]||0) + (stats.fav["رمان"]||0) +
+                               (stats.fav["مانجو"]||0) + (stats.fav["بطيخ"]||0) + (stats.fav["يقطين"]||0);
+        case "superCropMix": return (stats.fav["فاكهة ذهبية"]||0) + (stats.fav["فاكهة الطاقة"]||0);
+        case "animal": return animalLevels[a.animal] || 0;
+        case "sell": return totalProductsSold[a.product] || 0;
+        case "tasks": return completedTasksCount;
+        default: return 0;
+    }
+}
+
+function collectAchievementRewardFromExpansion(expansionElement, achId, level, rewardAmount) {
+    if (expansionElement.classList.contains('collecting')) return;
+    
+    const levelType = expansionElement.dataset.levelType;
+    const card = expansionElement.closest('.achievement-card');
+    const achievement = achievements.find(a => a.id === achId);
+    
+    expansionElement.classList.add('collecting');
+    
+    setTimeout(() => {
+        diamonds += rewardAmount;
+        updateUI();
+        
+        // إشعار مناسب للمستوى
+        const levelName = level === 1 ? 'البرونزية' : (level === 2 ? 'الفضية' : 'الذهبية');
+        const notification = document.createElement('div');
+        notification.className = 'task-reward-notification';
+        
+        if (level === 3 && achievement) {
+            // فتح اللقب مرة واحدة فقط
+            if (!achievementRewardsCollected[achId]?.goldCollected) {
+                unlockTitle(achievement.title, achievement.title, 200);
+            }
+            
+            notification.innerHTML = `
+                <div class="task-complete-title">🎉 لقد أكملت ميدالية المستوى الذهبي! 🎉</div>
+                <div class="rewards-float-container">
+                    <div class="reward-float-item">
+                        <div class="reward-expansion-header" style="margin-bottom: 5px;">
+                            <span class="reward-expansion-text" style="font-size: 18px;">حصلت على لقب: ${achievement.title}</span>
+                        </div>
+                        <div class="reward-expansion-diamonds">
+                            <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 35px;">
+                            <span style="font-size: 24px;">+${rewardAmount}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            notification.innerHTML = `
+                <div class="task-complete-title">🎉 لقد أكملت ميدالية المستوى ${levelName}! 🎉</div>
+                <div class="rewards-float-container">
+                    <div class="reward-float-item">
+                        <div class="reward-expansion-diamonds">
+                            <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 35px;">
+                            <span style="font-size: 24px;">+${rewardAmount}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+        
+        if (!achievementRewardsCollected[achId]) {
+            achievementRewardsCollected[achId] = {};
+        }
+        achievementRewardsCollected[achId][`${levelType}Collected`] = true;
+        
+        expansionElement.remove();
+        card.classList.remove('reward-pending');
+    }, 600);
+}
+
+function renderAchievements(){
+    const achList = document.getElementById("achievementsList"); 
+    achList.innerHTML = "";
+    
+    achievements.forEach(a => {
+        const progress = getAchievementProgressValue(a);
+        const currentLevel = getAchievementLevel(progress, a.reqs);
+        
+        let newLevelAchieved = null;
+        
+        if (currentLevel >= 1 && !achievementRewardsCollected[a.id]?.bronzeCollected) {
+            newLevelAchieved = 1;
+        }
+        else if (currentLevel >= 2 && !achievementRewardsCollected[a.id]?.silverCollected && 
+                 (achievementRewardsCollected[a.id]?.bronzeCollected || currentLevel >= 1)) {
+            newLevelAchieved = 2;
+        }
+        else if (currentLevel >= 3 && !achievementRewardsCollected[a.id]?.goldCollected && 
+                 (achievementRewardsCollected[a.id]?.silverCollected || currentLevel >= 2)) {
+            newLevelAchieved = 3;
+        }
+        
+        const card = document.createElement("div"); 
+        card.className = "achievement-card";
+        if (newLevelAchieved) {
+            card.classList.add('reward-pending');
+            card.dataset.pendingReward = newLevelAchieved;
+        }
+        
+        let progressBoxClass = "achievement-progress-box";
+        if (currentLevel === 3) {
+            progressBoxClass += " achievement-completed";
+        }
+        
+        const rewardAmount = newLevelAchieved ? levelRewardsDiamonds[newLevelAchieved] : 0;
+        const levelName = newLevelAchieved === 1 ? 'برونز' : (newLevelAchieved === 2 ? 'فضة' : 'ذهب');
+        const medalIcon = newLevelAchieved === 1 ? MEDAL_BRONZE : (newLevelAchieved === 2 ? MEDAL_SILVER : MEDAL_GOLD);
+        
+        card.innerHTML = `
+            <div class="achievement-top-row">
+                <div class="achievement-title">${a.title}</div>
+                <div class="${progressBoxClass}">
+                    <div class="achievement-progress-text">${getProgressText(progress, a.reqs, currentLevel)}</div>
+                </div>
+            </div>
+            <div class="achievement-description">${getAchievementDescription(a)}</div>
+            <div class="achievement-bottom-row">
+                <div class="medals-container">
+                    <img class="medal-icon" data-medal="bronze" data-ach-id="${a.id}" data-level="1" src="${currentLevel >= 1 ? MEDAL_BRONZE : MEDAL_LOCKED}" alt="برونز" title="برونز: ${a.reqs[0]}">
+                    <img class="medal-icon" data-medal="silver" data-ach-id="${a.id}" data-level="2" src="${currentLevel >= 2 ? MEDAL_SILVER : MEDAL_LOCKED}" alt="فضة" title="فضة: ${a.reqs[1]}">
+                    <img class="medal-icon" data-medal="gold" data-ach-id="${a.id}" data-level="3" src="${currentLevel >= 3 ? MEDAL_GOLD : MEDAL_LOCKED}" alt="ذهب" title="ذهب: ${a.reqs[2]}">
+                </div>
+                <div class="achievement-main-icon" style="position: relative;">
+                    <img src="${a.img}" alt="${a.title}">
+                    <div class="cup-overlay"></div>
+                </div>
+            </div>
+            ${newLevelAchieved ? `
+            <div class="reward-expansion" data-reward="${rewardAmount}" data-level="${newLevelAchieved}" data-ach-id="${a.id}" data-level-type="${newLevelAchieved === 1 ? 'bronze' : (newLevelAchieved === 2 ? 'silver' : 'gold')}" data-ach-title="${a.title}" onclick="collectAchievementRewardFromExpansion(this, ${a.id}, ${newLevelAchieved}, ${rewardAmount})">
+                <div class="reward-expansion-gif"></div>
+                <div class="reward-expansion-content">
+                    <div class="reward-expansion-header">
+                        <img src="${medalIcon}" class="reward-expansion-medal">
+                        <span class="reward-expansion-text">لقد اكملت ميدالية المستوى ${levelName}</span>
+                    </div>
+                    ${newLevelAchieved === 3 ? `
+                    <div class="reward-expansion-title" style="margin: 8px 0;">
+                        <span style="font-size: 18px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">لقب: ${a.title}</span>
+                    </div>
+                    ` : ''}
+                    <div class="reward-expansion-body">
+                        <div class="reward-expansion-diamonds">
+                            <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png">
+                            <span>+${rewardAmount}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        `;
+        
+        achList.appendChild(card);
+    });
+    
+    document.querySelectorAll('.medal-icon').forEach(medal => {
+        medal.addEventListener('mouseenter', showMedalTooltip);
+        medal.addEventListener('mouseleave', hideMedalTooltip);
+    });
+}
+
+function showMedalTooltip(e) {
+    const medal = e.target;
+    const title = medal.getAttribute('title');
+    if (!title) return;
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'medal-tooltip';
+    tooltip.textContent = title;
+    tooltip.style.position = 'absolute';
+    tooltip.style.left = (e.pageX + 10) + 'px';
+    tooltip.style.top = (e.pageY - 30) + 'px';
+    tooltip.id = 'medal-tooltip';
+    document.body.appendChild(tooltip);
+}
+
+function hideMedalTooltip() {
+    const tooltip = document.getElementById('medal-tooltip');
+    if (tooltip) tooltip.remove();
+}
+
+function openAchievements(){ 
+    document.getElementById("achievementsOverlay").classList.add("active"); 
+    renderAchievements(); 
+}
+function closeAchievements(){ 
+    document.getElementById("achievementsOverlay").classList.remove("active"); 
+}
+
+// ==================== المستويات ====================
+const levelRewards = {
+    5: [{ name: "جزر", img: "https://i.ibb.co/mCryXpF0/Carrot.png" }, { name: "مهام المزارع", img: "https://i.ibb.co/GftLRV0N/1769511897443.png" }],
+    10: [{ name: "باذنجان", img: "https://i.ibb.co/DPffT4bJ/eggplant.png" }, { name: "قطع ارض", img: "https://i.ibb.co/1000191306.png" }],
+};
+
+function showLevelUpUI(lvl) {
+    const overlay = document.getElementById('levelUpOverlay'), title = document.getElementById('levelUpTitle'), container = document.getElementById('unlockedItems');
+    title.textContent = `لقد وصلت إلى المستوى ${lvl}`; container.innerHTML = "";
+    if (levelRewards[lvl]) levelRewards[lvl].forEach(item => { container.innerHTML += `<div class="unlock-item"><div class="new-badge">جديد</div><img src="${item.img}"><span>${item.name}</span></div>`; });
+    overlay.style.display = 'flex';
+}
+function closeLevelUp() { document.getElementById('levelUpOverlay').style.display = 'none'; }
+
+// ==================== الحظيرة ====================
+function openBarn() { document.getElementById('barnModal').classList.add('active'); updateBarnUI(); }
+function closeBarn() { document.getElementById('barnModal').classList.remove('active'); }
+
+function switchBarnTab(tab) { 
+    currentTab = tab; 
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active')); 
+    if(event) event.currentTarget.classList.add('active'); 
+    updateBarnUI(); 
+    updateEnergyBar();
+}
+
+function updateBarnUI() {
+    const data = barnData[currentTab];
+    const levelVal = animalLevels[currentTab];
+    const img = document.getElementById('barnAnimalImg');
+    const levelBadge = document.getElementById('animalLevelBadge');
+    const upgradeBtn = document.getElementById('upgradeAnimalBtn');
+    const upgradePriceSpan = document.getElementById('upgradePrice');
+    const upgradeTextSpan = document.getElementById('upgradeText');
+    
+    img.src = data.img; 
+    
+    if (levelVal > 0) {
+        if (levelVal >= MAX_ANIMAL_LEVEL) {
+            levelBadge.textContent = `${MAX_ANIMAL_LEVEL} المستوى`;
+            levelBadge.classList.add('max-level');
+        } else {
+            levelBadge.textContent = `${levelVal} المستوى`;
+            levelBadge.classList.remove('max-level');
+        }
+        levelBadge.style.display = 'inline-block';
+    } else {
+        levelBadge.textContent = "غير مملوك";
+        levelBadge.classList.remove('max-level');
+    }
+    
+    const remaining = animalCooldowns[currentTab] - Date.now();
+    if (remaining > 0) { 
+        img.style.filter = "grayscale(0.7) brightness(0.8)"; 
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('animalTimer').innerText = `${h}h ${m}m ${s}s`;
+    } else { 
+        img.style.filter = "none"; 
+        document.getElementById('animalTimer').innerText = "";
+    }
+    
+    if (levelVal >= MAX_ANIMAL_LEVEL) { 
+        upgradeBtn.classList.add('max-level');
+        upgradeTextSpan.innerText = "أقصى مستوى";
+        upgradePriceSpan.parentElement.style.display = 'none';
+    } else { 
+        upgradeBtn.classList.remove('max-level');
+        upgradePriceSpan.parentElement.style.display = 'flex';
+        let price = levelVal === 0 ? data.basePrice : data.basePrice * (levelVal + 1);
+        price = applyEventToAnimalPrice(price);
+        upgradePriceSpan.innerText = price; 
+        upgradeTextSpan.innerText = levelVal === 0 ? "شراء" : "تطوير"; 
+    }
+    
+    updateEnergyBar();
+}
+
+function executeUpgrade() {
+    const barnModal = document.getElementById('barnModal');
+    if (!barnModal.classList.contains('active')) return;
+    
+    const data = barnData[currentTab];
+    const levelVal = animalLevels[currentTab];
+    
+    if (levelVal >= MAX_ANIMAL_LEVEL) {
+        showNotify("لقد وصل الحيوان إلى المستوى الأقصى!");
+        return;
+    }
+    
+    let price = levelVal === 0 ? data.basePrice : data.basePrice * (levelVal + 1);
+    price = applyEventToAnimalPrice(price);
+    
+    if (money >= price) { 
+        money -= price; 
+        animalLevels[currentTab]++; 
+        updateUI(); 
+        updateBarnUI(); 
+        
+        if (animalLevels[currentTab] >= MAX_ANIMAL_LEVEL) {
+            showNotify(`🎉 مبروك! وصل ${data.name} إلى المستوى الأقصى! 🎉`);
+        } else {
+            showNotify(`تم تطوير ${data.name} للمستوى ${animalLevels[currentTab]}`);
+        }
+    } else {
+        showNotify("لا تملك نقوداً كافية!");
+    }
+}
+
+function calculateAnimalWaitTime(level) {
+    const totalMinutesInDay = 24 * 60;
+    const reduction = level * 12;
+    let finalMinutes = totalMinutesInDay - reduction;
+    if (finalMinutes < 1) finalMinutes = 1;
+    return finalMinutes * 60 * 1000;
+}
+
+function tapAnimal(imgElement) {
+    if (Date.now() < animalCooldowns[currentTab]) { 
+        showNotify("الحيوان يستريح حالياً!"); 
+        return; 
+    }
+    if (animalLevels[currentTab] <= 0) { 
+        showNotify("يجب شراء الحيوان أولاً!"); 
+        return; 
+    }
+    
+    inventory[currentTab]++;
+    
+    const rect = imgElement.getBoundingClientRect();
+    const centerX = rect.left + (rect.width / 2);
+    const centerY = rect.top + (rect.height / 2);
+    createTapEffect(centerX, centerY);
+    
+    imgElement.style.transform = "scale(0.9)"; 
+    setTimeout(() => { imgElement.style.transform = "scale(1)"; }, 100);
+    
+    if (animalEnergy[currentTab] < 100) { 
+        animalEnergy[currentTab] += 10; 
+        updateEnergyBar(); 
+    }
+    
+    if (animalEnergy[currentTab] >= 100) {
+        startAnimalCooldown(imgElement);
+    }
+}
+
+function createTapEffect(x, y) {
+    const effect = document.createElement('div'); 
+    effect.className = 'tap-effect';
+    const icons = { 
+        'chicken': 'https://i.ibb.co/gbMXS0Yg/Egg.png', 
+        'cow': 'https://i.ibb.co/2YCB7dq0/1773562787884.png', 
+        'sheep': 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png' 
+    };
+    effect.innerHTML = `<img src="${icons[currentTab]}"><span>+</span>`;
+    effect.style.position = 'fixed';
+    effect.style.left = (x - 20) + 'px';
+    effect.style.top = (y - 40) + 'px';
+    effect.style.transform = 'translate(-50%, -50%)';
+    document.body.appendChild(effect); 
+    setTimeout(() => effect.remove(), 800);
+}
+
+function updateEnergyBar() { 
+    const fill = document.getElementById('energyFill'); 
+    if (fill) fill.style.height = animalEnergy[currentTab] + "%"; 
+}
+
+function giveAnimalBonus() {
+    let bonus = animalLevels[currentTab] * 50;
+    money += bonus; showNotify(`الحيوان سعيد! حصلت على +${bonus} عملة`);
+    updateUI(); setTimeout(() => { animalEnergy[currentTab] = 0; updateEnergyBar(); }, 500);
+}
+
+function startAnimalCooldown(imgElement) {
+    const level = animalLevels[currentTab];
+    const waitTime = calculateAnimalWaitTime(level);
+    animalCooldowns[currentTab] = Date.now() + waitTime;
+    giveAnimalBonus();
+    imgElement.style.filter = "grayscale(0.7) brightness(0.8)";
+    updateBarnUI();
+}
+
+setInterval(() => {
+    const timerTxt = document.getElementById('animalTimer');
+    const img = document.getElementById('barnAnimalImg');
+    if (!timerTxt || !img) return;
+    const remaining = animalCooldowns[currentTab] - Date.now();
+    if (remaining > 0) { 
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        timerTxt.innerText = `${h}h ${m}m ${s}s`;
+        img.style.filter = "grayscale(0.7) brightness(0.8)";
+    } else { 
+        if (timerTxt.innerText !== "") { 
+            timerTxt.innerText = ""; 
+            img.style.filter = "none"; 
+        } 
+    }
+}, 1000);
+
+// ==================== دوال مخزن المنتجات ====================
+function openProductStorage() {
+    document.getElementById('eggCount').innerText = inventory.chicken;
+    document.getElementById('milkCount').innerText = inventory.cow;
+    document.getElementById('woolCount').innerText = inventory.sheep;
+    
+    const grid = document.getElementById('productStorageGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    const items = [
+        { name: 'حليب', img: sellIcons.cow, count: inventory.cow, type: 'cow' },
+        { name: 'صوف', img: sellIcons.sheep, count: inventory.sheep, type: 'sheep' },
+        { name: 'بيض', img: sellIcons.chicken, count: inventory.chicken, type: 'chicken' }
+    ];
+    
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'product-storage-item';
+        div.onclick = () => openSellModal(item.type);
+        div.innerHTML = `
+            <img src="${item.img}">
+            <div class="product-storage-name">${item.name}</div>
+            <div class="product-storage-count">${item.count}</div>
+        `;
+        grid.appendChild(div);
+    });
+    
+    document.getElementById('productStorageModal').classList.add('active');
+}
+
+function closeProductStorage() { 
+    document.getElementById('productStorageModal').classList.remove('active'); 
+}
+
+// ==================== دوال البيع ====================
+let currentSellQty = 1;
+let currentSellMax = 1;
+let currentTraderSellQty = 1;
+let currentTraderSellMax = 1;
+
+function openSellModal(animalType) {
+    if (inventory[animalType] <= 0) { 
+        showNotifyHTML(`ليس لديك أي ${productNames[animalType]} لبيعه!`); 
+        return; 
+    }
+    closeProductStorage(); 
+    currentSellingAnimal = animalType;
+    currentSellMax = inventory[animalType];
+    currentSellQty = 1;
+    
+    document.getElementById('sellProductImg').src = sellIcons[animalType];
+    document.getElementById('sellProductName').innerText = productNames[animalType];
+    document.getElementById('sellUnitPrice').innerText = sellPrices[animalType];
+    document.getElementById('sellQtyDisplay').innerText = currentSellQty;
+    updateSellTotalDisplay();
+    
+    const modal = document.getElementById('sellModal');
+    const container = modal.querySelector('.sell-container');
+    modal.style.opacity = '';
+    modal.style.visibility = '';
+    container.style.transform = '';
+    modal.classList.add('active');
+}
+
+function closeSellModalFromOverlay(event) {
+    if (event.target === event.currentTarget) {
+        const modal = document.getElementById('sellModal');
+        const container = modal.querySelector('.sell-container');
+        container.style.transform = 'translateY(100px)';
+        modal.classList.remove('active');
+        modal.style.opacity = '';
+        modal.style.visibility = '';
+        setTimeout(() => {
+            container.style.transform = '';
+        }, 400);
+    }
+}
+
+function closeSellModal() { 
+    const modal = document.getElementById('sellModal');
+    const container = modal.querySelector('.sell-container');
+    container.style.transform = 'translateY(100px)';
+    modal.classList.remove('active');
+    modal.style.opacity = '';
+    modal.style.visibility = '';
+    setTimeout(() => {
+        container.style.transform = '';
+    }, 400);
+}
+
+function updateSellTotalDisplay() {
+    const total = currentSellQty * sellPrices[currentSellingAnimal];
+    document.getElementById('sellTotalPrice').innerHTML = `${total} <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;">`;
+}
+
+function changeSellQty(delta) {
+    let newQty = currentSellQty + delta;
+    if (newQty >= 1 && newQty <= currentSellMax) {
+        currentSellQty = newQty;
+        document.getElementById('sellQtyDisplay').innerText = currentSellQty;
+        updateSellTotalDisplay();
+    }
+}
+
+function setSellMaxQty() {
+    currentSellQty = currentSellMax;
+    document.getElementById('sellQtyDisplay').innerText = currentSellQty;
+    updateSellTotalDisplay();
+}
+
+function confirmSell() { 
+    const qty = currentSellQty;
+    const total = qty * sellPrices[currentSellingAnimal]; 
+    money += total;
+    totalSellProfit += total;
+    inventory[currentSellingAnimal] -= qty;
+    totalProductsSold[currentSellingAnimal] += qty;
+    closeSellModal();
+    updateUI(); 
+    showNotifyHTML(`تم بيع ${qty} ${productNames[currentSellingAnimal]} مقابل ${total} <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;">`); 
+}
+
+// ==================== دوال بيع التاجر ====================
+function openTraderSellModal(cropName) {
+    const crop = allCrops.find(c => c.name === cropName);
+    if (!crop) return;
+    const count = cropInventory[crop.name];
+    if (count === 0) { showNotify(`ليس لديك ${crop.name} للبيع!`); return; }
+    currentSellingCrop = crop;
+    currentTraderSellMax = count;
+    currentTraderSellQty = 1;
+    
+    document.getElementById('traderSellImg').src = crop.img;
+    document.getElementById('traderSellName').textContent = crop.name;
+    document.getElementById('traderCurrentPrice').textContent = getCropProfitWithUpgrade(crop);
+    document.getElementById('traderSellQtyDisplay').innerText = currentTraderSellQty;
+    updateTraderSellTotalDisplay();
+    
+    const modal = document.getElementById('traderSellModal');
+    const container = modal.querySelector('.trader-sell-container');
+    modal.style.opacity = '';
+    modal.style.visibility = '';
+    container.style.transform = '';
+    modal.classList.add('active');
+}
+
+function closeTraderSellModalFromOverlay(event) {
+    if (event.target === event.currentTarget) {
+        const modal = document.getElementById('traderSellModal');
+        const container = modal.querySelector('.trader-sell-container');
+        container.style.transform = 'translateY(100px)';
+        modal.classList.remove('active');
+        modal.style.opacity = '';
+        modal.style.visibility = '';
+        setTimeout(() => {
+            container.style.transform = '';
+        }, 400);
+    }
+}
+
+function closeTraderSellModal() { 
+    const modal = document.getElementById('traderSellModal');
+    const container = modal.querySelector('.trader-sell-container');
+    container.style.transform = 'translateY(100px)';
+    modal.classList.remove('active');
+    modal.style.opacity = '';
+    modal.style.visibility = '';
+    setTimeout(() => {
+        container.style.transform = '';
+    }, 400);
+}
+
+function updateTraderSellTotalDisplay() {
+    const price = getCropProfitWithUpgrade(currentSellingCrop);
+    const total = currentTraderSellQty * price;
+    document.getElementById('traderSellTotalPrice').innerHTML = `${total} <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:18px; vertical-align:middle;">`;
+}
+
+function changeTraderSellQty(delta) {
+    let newQty = currentTraderSellQty + delta;
+    if (newQty >= 1 && newQty <= currentTraderSellMax) {
+        currentTraderSellQty = newQty;
+        document.getElementById('traderSellQtyDisplay').innerText = currentTraderSellQty;
+        updateTraderSellTotalDisplay();
+    }
+}
+
+function setTraderSellMaxQty() {
+    currentTraderSellQty = currentTraderSellMax;
+    document.getElementById('traderSellQtyDisplay').innerText = currentTraderSellQty;
+    updateTraderSellTotalDisplay();
+}
+
+function confirmTraderSell() {
+    const qty = currentTraderSellQty;
+    const price = getCropProfitWithUpgrade(currentSellingCrop);
+    const total = qty * price;
+    if (cropInventory[currentSellingCrop.name] >= qty) {
+        cropInventory[currentSellingCrop.name] -= qty;
+        money += total;
+        totalSellProfit += total;
+        updateUI();
+        renderCropStorage(); renderTraderGrid();
+        showNotifyHTML(`تم بيع ${qty} ${currentSellingCrop.name} للتاجر مقابل ${total} <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;">`);
+        closeTraderSellModal();
+    } else showNotify("كمية غير متوفرة!");
+}
+
+// ==================== مخزن المحاصيل ====================
+function openCropStorage() { 
+    const overlay = document.getElementById('cropStorageOverlay'); 
+    if (!overlay) return; 
+    renderCropStorage(); 
+    overlay.classList.add('active'); 
+}
+function closeCropStorage() { 
+    const overlay = document.getElementById('cropStorageOverlay'); 
+    if (overlay) overlay.classList.remove('active'); 
+}
+
+function renderCropStorage() {
+    const grid = document.getElementById('cropStorageGrid'); 
+    if (!grid) return; 
+    grid.innerHTML = '';
+    allCrops.forEach(crop => {
+        const count = cropInventory[crop.name] || 0;
+        const item = document.createElement('div'); 
+        item.className = 'crop-storage-item';
+        item.onclick = () => showNotify(`لديك ${count} ${crop.name} في المخزن!`);
+        item.innerHTML = `<img src="${crop.img}" alt="${crop.name}"><div class="crop-storage-name">${crop.name}</div><div class="crop-storage-count">${count}</div>`;
+        grid.appendChild(item);
+    });
+}
+
+// ==================== نظام التاجر ====================
+let traderPrices = {};
+let totalSellProfit = 0;  
+let totalDiamondsCrafted = 0;  
+
+function initTrader() { updateTraderPrices(); }
+
+function updateTraderPrices() {
+    allCrops.forEach(crop => {
+        if (crop.name !== 'فاكهة الطاقة' && crop.profit > 0 && crop.name !== 'فاكهة ذهبية') {
+            const multiplier = 0.8 + (Math.random() * 0.7);
+            traderPrices[crop.name] = Math.floor(crop.profit * multiplier);
+        }
+    });
+}
+
+function updateTraderButton() {
+    const traderBtn = document.querySelector('.trader-wrapper .circle-btn');
+    if (traderBtn && diamondTraderAvailable) {
+        traderBtn.style.border = "4px solid #ffd700";
+        traderBtn.style.boxShadow = "0 0 10px rgba(255, 215, 0, 0.5)";
+    } else if (traderBtn) {
+        traderBtn.style.border = "4px solid #4e3421";
+        traderBtn.style.boxShadow = "none";
+    }
+}
+
+function openTrader() {
+    const overlay = document.getElementById('traderOverlay');
+    if (!overlay) return;
+    renderTraderGrid();
+    overlay.classList.add('active');
+}
+
+function closeTrader() { const overlay = document.getElementById('traderOverlay'); if (overlay) overlay.classList.remove('active'); }
+
+function renderTraderGrid() {
+    const grid = document.getElementById('traderGrid'); 
+    if (!grid) return; 
+    grid.innerHTML = '';
+    
+    if (goldenFruitAvailable) {
+        const goldenCrop = allCrops.find(c => c.id === 16);
+        if (goldenCrop) {
+            const profit = getCropProfitWithUpgrade(goldenCrop);
+            const count = cropInventory[goldenCrop.name] || 0;
+            
+            const goldenItem = document.createElement('div');
+            goldenItem.className = 'trader-item golden-item';
+            goldenItem.style.border = "3px solid #ffd700";
+            goldenItem.style.background = "linear-gradient(145deg, rgba(255, 215, 0, 0.15), rgba(255, 170, 0, 0.15))";
+            
+            goldenItem.innerHTML = `
+                <div class="trader-item-stock" style="background: #ffd700; color: #4e3421;">${count}</div>
+                <img class="trader-item-img" src="${goldenCrop.img}" alt="${goldenCrop.name}">
+                <div class="trader-item-name">${goldenCrop.name}</div>
+                <div class="trader-item-price">${profit} <img src="https://i.ibb.co/N6GXqGpk/Money.png"></div>
+                <div class="sell-btn-on-card" onclick="event.stopPropagation(); openTraderSellModal('${goldenCrop.name}')">بيع</div>
+            `;
+            
+            grid.appendChild(goldenItem);
+        }
+    }
+    
+    allCrops.forEach(crop => {
+        if (crop.name === 'فاكهة الطاقة' || crop.id === 17) return;
+        if (crop.name === 'فاكهة ذهبية' || crop.id === 16) return;
+        
+        const profit = getCropProfitWithUpgrade(crop);
+        const count = cropInventory[crop.name] || 0;
+        
+        const item = document.createElement('div'); 
+        item.className = 'trader-item';
+        
+        item.innerHTML = `
+            <div class="trader-item-stock">${count}</div>
+            <img class="trader-item-img" src="${crop.img}" alt="${crop.name}">
+            <div class="trader-item-name">${crop.name}</div>
+            <div class="trader-item-price">${profit} <img src="https://i.ibb.co/N6GXqGpk/Money.png"></div>
+            <div class="sell-btn-on-card" onclick="event.stopPropagation(); openTraderSellModal('${crop.name}')">بيع</div>
+        `;
+        
+        grid.appendChild(item);
+    });
+    
+    if (diamondTraderAvailable && currentEvent && currentEvent.effect === 'diamondTrader') {
+        const exchangeRate = currentEvent.value;
+        const maxExchange = Math.floor(money / exchangeRate);
+        
+        const diamondItem = document.createElement('div');
+        diamondItem.className = 'trader-item diamond-trader-item';
+        diamondItem.style.background = "linear-gradient(1deg, rgba(184, 134, 11, 1), rgba(139, 101, 8, 0.1))";
+        diamondItem.style.border = "3px solid #ffd700";
+        diamondItem.style.minWidth = "120px";
+        diamondItem.style.padding = "12px";
+        
+        diamondItem.innerHTML = `
+            <div class="trader-item-stock" style="background: #ffd700; color: #2c3e50;">${maxExchange}</div>
+            <img class="trader-item-img" src="https://i.ibb.co/QvX5WXJg/1775554053580.png" style="width: 55px; height: 55px;">
+            <div class="trader-item-name">مكينة الألماس</div>
+            <div class="trader-item-price">${exchangeRate} <img src="https://i.ibb.co/N6GXqGpk/Money.png"> = 1 <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 16px;"></div>
+            <div class="sell-btn-on-card" style="background: #ffd700; color: #2c3e50; border-color: #ffeb3b;" onclick="event.stopPropagation(); openDiamondExchangeModal()">تحويل</div>
+        `;
+        
+        grid.insertBefore(diamondItem, grid.firstChild);
+    }
+}
+
+function openDiamondExchangeModal() {
+    const exchangeRate = currentEvent ? currentEvent.value : 1000;
+    const maxExchange = Math.floor(money / exchangeRate);
+    
+    if (maxExchange === 0) {
+        showNotify(`ليس لديك عملات كافية!`);
+        return;
+    }
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'diamond-exchange-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.background = 'rgba(0,0,0,0.7)';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '2000';
+    overlay.style.opacity = '0';
+    overlay.style.visibility = 'hidden';
+    overlay.style.transition = 'all 0.4s ease';
+    
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            const modal = overlay.querySelector('.diamond-exchange-modal');
+            modal.style.transform = 'translateY(100px)';
+            overlay.style.opacity = '0';
+            overlay.style.visibility = 'hidden';
+            setTimeout(() => overlay.remove(), 400);
+        }
+    };
+    
+    const modal = document.createElement('div');
+    modal.className = 'diamond-exchange-modal';
+    modal.style.background = '#c49a7c';
+    modal.style.border = '8px solid #4e3421';
+    modal.style.borderRadius = '35px';
+    modal.style.padding = '25px';
+    modal.style.width = '320px';
+    modal.style.textAlign = 'center';
+    modal.style.position = 'relative';
+    modal.style.transform = 'translateY(100px)';
+    modal.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    modal.onclick = (e) => e.stopPropagation();
+    
+    modal.innerHTML = `
+        <div style="font-size: 24px; font-weight: bold; color: #4e3421; margin-bottom: 15px;">مكينة الألماس</div>
+        <div style="width: 80%; height: 3px; background: #4e3421; margin: 0 auto 15px auto;"></div>
+        <div style="margin-bottom: 20px;">
+            <img src="https://i.ibb.co/QvX5WXJg/1775554053580.png" style="width: 180px; height: 180px; object-fit: contain;">
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <button id="decreaseQty" style="width: 40px; height: 40px; background: #4e3421; color: white; border: none; border-radius: 10px; font-size: 20px; cursor: pointer;">-</button>
+            <div style="display: flex; align-items: center; gap: 1px;">
+                <span id="exchangeQty" style="font-size: 24px; font-weight: bold; color: #4e3421; min-width:20px;">1</span>
+                <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 34px;">
+            </div>
+            <button id="increaseQty" style="width: 40px; height: 40px; background: #4e3421; color: white; border: none; border-radius: 10px; font-size: 20px; cursor: pointer;">+</button>
+        </div>
+        <div style="background: #4e3421; border-radius: 15px; padding: 10px; margin-bottom: 20px;">
+            <div style="font-size: 14px; color: #e39a75; margin-bottom: 5px;">التكلفة</div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <span style="font-size: 24px; font-weight: bold; color: #ff4444;">-<span id="exchangeCost">${exchangeRate}</span></span>
+                <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width: 20px;">
+            </div>
+        </div>
+        <button id="confirmExchange" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #1e7e34;">تأكيد الشراء</button>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        overlay.style.visibility = 'visible';
+        modal.style.transform = 'translateY(0)';
+    }, 10);
+    
+    let currentQty = 1;
+    const qtySpan = document.getElementById('exchangeQty');
+    const costSpan = document.getElementById('exchangeCost');
+    
+    const updateDisplay = () => {
+        qtySpan.textContent = currentQty;
+        costSpan.textContent = currentQty * exchangeRate;
+    };
+    
+    document.getElementById('decreaseQty').onclick = () => {
+        if (currentQty > 1) {
+            currentQty--;
+            updateDisplay();
+        }
+    };
+    
+    document.getElementById('increaseQty').onclick = () => {
+        if (currentQty < maxExchange) {
+            currentQty++;
+            updateDisplay();
+        }
+    };
+    
+    document.getElementById('confirmExchange').onclick = () => {
+        if (currentQty <= maxExchange && currentQty > 0) {
+            const cost = currentQty * exchangeRate;
+            money -= cost;
+            diamonds += currentQty;
+            totalDiamondsCrafted += currentQty;
+            updateUI();
+            
+            showNotifyHTML(`تم تحويل <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;"> ${cost} إلى <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width:16px; vertical-align:middle;"> ${currentQty}`);
+            
+            modal.style.transform = 'translateY(100px)';
+            overlay.style.opacity = '0';
+            overlay.style.visibility = 'hidden';
+            setTimeout(() => overlay.remove(), 400);
+            
+            if (diamondTraderAvailable) {
+                renderTraderGrid();
+            }
+        }
+    };
+}
+
+// ==================== نظام الأحداث اليومية ====================
+let eventCardRewardCollected = false;
+let energyFruitAvailable = false;
+
+const eventTypes = [
+    { id: 0, name: 'تقليل وقت المحاصيل', img: 'https://i.ibb.co/your-speed-icon.png', effect: 'reduceTime', value: 20, description: 'وقت نمو المحاصيل أقل بنسبة 20%' },
+    { id: 1, name: 'محاصيل بلا تكلفة', img: 'https://i.ibb.co/your-free-icon.png', effect: 'freeCrops', value: 100, description: 'زراعة المحاصيل بدون تكلفة' },
+    { id: 2, name: 'أرباح إضافية', img: 'https://i.ibb.co/your-profit-icon.png', effect: 'bonusProfit', value: 20, description: 'زيادة أرباح المحاصيل بنسبة 20%' },
+    { id: 3, name: 'تخفيض ترقية الحيوان', img: 'https://i.ibb.co/your-upgrade-icon.png', effect: 'animalDiscount', value: 20, description: 'تخفيض 20% على ترقية الحيوانات' },
+    { id: 4, name: 'فرصة ألماس', img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', effect: 'diamondChance', value: 50, description: '50% فرصة للحصول على ألماس عند الحصاد' },
+    { id: 5, name: 'XP مضاعف', img: 'https://i.ibb.co/8gf9nWHd/XP.png', effect: 'bonusXP', value: 20, description: 'زيادة XP المكتسب بنسبة 20%' },
+    { id: 6, name: 'مضاعفة المحصول', img: '', effect: 'doubleCrop', value: null, description: '' },
+    { id: 7, name: 'الفاكهة الذهبية', img: 'https://i.ibb.co/W49Xsx6j/1775296771569.png', effect: 'goldenFruit', value: null, description: 'ظهور محصول الفاكهة الذهبية في السلة والتاجر لهذا اليوم فقط' },
+    { id: 8, name: 'مكينة الألماس', img: 'https://i.ibb.co/QvX5WXJg/1775554053580.png', effect: 'diamondTrader', value: 1000, description: 'يمكنك تحويل العملات إلى ألماس (1000 عملة = 1 ألماسة)' },
+    { id: 9, name: 'فاكهة الطاقة', img: 'https://i.ibb.co/0VzZXkm1/Xpp.png', effect: 'energyFruit', value: null, description: 'ظهور محصول فاكهة الطاقة في السلة للتجربة' }
+];
+
+let currentEvent = null;
+let eventEndTime = null;
+let eventTimerInterval = null;
+let currentDoubleCrop = null;
+let goldenFruitAvailable = false;
+let diamondTraderAvailable = false;
+let eventSequenceIndex = 3;
+
+function getRandomCropForDouble() {
+    const validCrops = allCrops.filter(c => c.name !== 'فاكهة الطاقة' && c.name !== 'فاكهة ذهبية');
+    if (validCrops.length === 0) return null;
+    return validCrops[Math.floor(Math.random() * validCrops.length)];
+}
+
+function showEventCardNotification() {
+    const notification = document.getElementById('eventCardNotification');
+    if (notification && !eventCardRewardCollected) {
+        notification.classList.remove('hidden');
+        notification.classList.remove('fade-out');
+        notification.style.animation = 'none';
+        notification.offsetHeight;
+        notification.style.animation = 'expandImage 0.5s ease-out forwards';
+    }
+}
+
+function collectEventReward(event) {
+    event.stopPropagation();
+    if (eventCardRewardCollected) return;
+    eventCardRewardCollected = true;
+    const notification = document.getElementById('eventCardNotification');
+    notification.classList.add('fade-out');
+    setTimeout(() => {
+        notification.classList.add('hidden');
+        notification.classList.remove('fade-out');
+    }, 100);
+}
+
+function selectRandomEvent() {
+    const nextEvent = eventTypes[eventSequenceIndex];
+    currentEvent = { ...nextEvent };
+    eventSequenceIndex++;
+    if (eventSequenceIndex >= eventTypes.length) eventSequenceIndex = 0;
+    
+    eventCardRewardCollected = false;
+    showEventCardNotification();
+    
+    if (currentEvent.effect === 'doubleCrop') {
+        const randomCrop = getRandomCropForDouble();
+        if (randomCrop) {
+            currentDoubleCrop = randomCrop.name;
+            currentEvent.name = `مضاعفة ${randomCrop.name}`;
+            currentEvent.img = randomCrop.img;
+            currentEvent.description = `مضاعفة محصول ${randomCrop.name} ستحصل على ضعف الكمية عند حصاد هذا المحصول`;
+        } else return selectRandomEvent();
+    }
+    
+    if (currentEvent.effect === 'goldenFruit') {
+        goldenFruitAvailable = true;
+        if (!allCrops.find(c => c.id === 16)) {
+            allCrops.unshift(goldenFruitCrop);
+            cropInventory[goldenFruitCrop.name] = 0;
+            cropUpgradeLevels[goldenFruitCrop.name] = 1;
+            rebuildCropMenu();
+        }
+    } else {
+        if (goldenFruitAvailable) {
+            const goldenIndex = allCrops.findIndex(c => c.id === 16);
+            if (goldenIndex !== -1) {
+                allCrops.splice(goldenIndex, 1);
+                delete cropInventory[goldenFruitCrop.name];
+                delete cropUpgradeLevels[goldenFruitCrop.name];
+                rebuildCropMenu();
+            }
+            goldenFruitAvailable = false;
+        }
+    }
+    
+    if (currentEvent.effect === 'energyFruit') {
+        energyFruitAvailable = true;
+        if (!allCrops.find(c => c.id === 17)) {
+            allCrops.unshift(energyFruitCrop);
+            cropInventory[energyFruitCrop.name] = 0;
+            cropUpgradeLevels[energyFruitCrop.name] = 1;
+            rebuildCropMenu();
+        }
+    } else {
+        if (energyFruitAvailable) {
+            const energyIndex = allCrops.findIndex(c => c.id === 17);
+            if (energyIndex !== -1) {
+                allCrops.splice(energyIndex, 1);
+                delete cropInventory[energyFruitCrop.name];
+                delete cropUpgradeLevels[energyFruitCrop.name];
+                rebuildCropMenu();
+            }
+            energyFruitAvailable = false;
+        }
+    }
+    
+    if (currentEvent.effect === 'diamondTrader') {
+        diamondTraderAvailable = true;
+        currentEvent.description = `يمكنك تحويل العملات إلى ألماس (${currentEvent.value} عملة = 1 ألماسة)`;
+    } else diamondTraderAvailable = false;
+    
+    eventEndTime = Date.now() + (24 * 60 * 60 * 1000);
+    updateEventsUI();
+    startEventTimer();
+    updateCurrentCropInfo();
+    updateTraderButton();
+}
+
+function updateCurrentCropInfo() {
+    if (!currentInfoCrop) return;
+    
+    let finalCost = applyEventToCropCost(currentInfoCrop.cost);
+    let finalProfit = applyEventToCropProfit(getCropProfitWithUpgrade(currentInfoCrop));
+    let finalXP = applyEventToXP(getCropXPWithUpgrade(currentInfoCrop));
+    let finalTime = applyEventToCropTime(currentInfoCrop.time);
+    
+    if (finalCost === 0) {
+        document.getElementById('infoCost').innerHTML = `مجاني`;
+    } else {
+        document.getElementById('infoCost').innerHTML = `<img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:30px; vertical-align:middle;"> ${finalCost}`;
+    }
+    
+    if (finalProfit === 0) {
+        document.getElementById('infoProfit').innerHTML = `بلا ربح`;
+    } else {
+        document.getElementById('infoProfit').innerHTML = `<img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:30px; vertical-align:middle;"> ${finalProfit}`;
+    }
+    
+    if (finalXP === 0) {
+        document.getElementById('infoXP').innerHTML = `لا نقاط`;
+    } else {
+        document.getElementById('infoXP').innerHTML = `<img src="https://i.ibb.co/8gf9nWHd/XP.png" style="width:30px; vertical-align:middle;"> ${finalXP}`;
+    }
+    
+    let timeLabel = currentInfoCrop.timeLabel;
+    if (finalTime !== currentInfoCrop.time) {
+        const hours = Math.floor(finalTime / 3600);
+        const minutes = Math.floor((finalTime % 3600) / 60);
+        const seconds = Math.floor(finalTime % 60);
+        if (hours > 0) {
+            timeLabel = `${hours}h ${minutes}m`;
+        } else if (minutes > 0) {
+            timeLabel = `${minutes}m ${seconds}s`;
+        } else {
+            timeLabel = `${seconds}s`;
+        }
+    }
+    document.getElementById('infoTime').innerHTML = `<img src="https://i.ibb.co/VYVzG45K/Timer.png" style="width:30px; vertical-align:middle;"> ${timeLabel}`;
+}
+
+function updateEventsUI() {
+    if (!currentEvent) return;
+    const eventImage = document.getElementById('eventImage');
+    const eventName = document.getElementById('eventName');
+    const eventDesc = document.getElementById('eventDesc');
+    if (eventImage) eventImage.src = currentEvent.img;
+    if (eventName) eventName.textContent = currentEvent.name;
+    if (eventDesc) eventDesc.textContent = currentEvent.description;
+}
+
+function startEventTimer() {
+    if (eventTimerInterval) clearInterval(eventTimerInterval);
+    eventTimerInterval = setInterval(() => {
+        if (!eventEndTime) return;
+        const remaining = eventEndTime - Date.now();
+        if (remaining <= 0) { clearInterval(eventTimerInterval); endCurrentEvent(); return; }
+        const hours = Math.floor(remaining / (60 * 60 * 1000));
+        const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+        const timerElement = document.getElementById('eventsTimer');
+        if (timerElement) timerElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function endCurrentEvent() {
+    if (goldenFruitAvailable) {
+        const goldenIndex = allCrops.findIndex(c => c.id === 16);
+        if (goldenIndex !== -1) {
+            allCrops.splice(goldenIndex, 1);
+            delete cropInventory[goldenFruitCrop.name];
+            delete cropUpgradeLevels[goldenFruitCrop.name];
+            rebuildCropMenu();
+        }
+        goldenFruitAvailable = false;
+    }
+    
+    if (energyFruitAvailable) {
+        const energyIndex = allCrops.findIndex(c => c.id === 17);
+        if (energyIndex !== -1) {
+            allCrops.splice(energyIndex, 1);
+            delete cropInventory[energyFruitCrop.name];
+            delete cropUpgradeLevels[energyFruitCrop.name];
+            rebuildCropMenu();
+        }
+        energyFruitAvailable = false;
+    }
+    
+    diamondTraderAvailable = false;
+    currentEvent = null;
+    currentDoubleCrop = null;
+    selectRandomEvent();
+    updateTraderButton();
+}
+
+function openEvents() {
+    const overlay = document.getElementById('eventsOverlay');
+    if (overlay) overlay.classList.add('active');
+}
+
+function closeEvents() {
+    const overlay = document.getElementById('eventsOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+function applyEventToCropTime(baseTime) {
+    if (!currentEvent) return baseTime;
+    if (currentEvent.effect === 'reduceTime') return baseTime * (1 - currentEvent.value / 100);
+    return baseTime;
+}
+
+function applyEventToCropCost(baseCost) {
+    if (!currentEvent) return baseCost;
+    if (currentEvent.effect === 'freeCrops') return 0;
+    return baseCost;
+}
+
+function applyEventToCropProfit(baseProfit) {
+    if (!currentEvent) return baseProfit;
+    if (currentEvent.effect === 'bonusProfit') return Math.floor(baseProfit * (1 + currentEvent.value / 100));
+    return baseProfit;
+}
+
+function applyEventToXP(baseXP) {
+    if (!currentEvent) return baseXP;
+    if (currentEvent.effect === 'bonusXP') return Math.floor(baseXP * (1 + currentEvent.value / 100));
+    return baseXP;
+}
+
+function applyEventToAnimalPrice(basePrice) {
+    if (!currentEvent) return basePrice;
+    if (currentEvent.effect === 'animalDiscount') return Math.floor(basePrice * (1 - currentEvent.value / 100));
+    return basePrice;
+}
+
+function applyDiamondChance() {
+    if (!currentEvent) return false;
+    if (currentEvent.effect === 'diamondChance') {
+        if (Math.random() * 100 < currentEvent.value) { diamonds++; updateUI(); return true; }
+    }
+    return false;
+}
+
+function applyDoubleCropEffect(cropName, count) {
+    if (!currentEvent) return count;
+    if (currentEvent.effect === 'doubleCrop' && currentDoubleCrop === cropName) return count * 2;
+    return count;
+}
+
+// ==================== نظام المواسم ====================
+const seasons = [
+    { id: 0, name: 'الشتاء', nameEn: 'winter', icon: '❄️' },
+    { id: 1, name: 'الربيع', nameEn: 'spring', icon: '🌸' },
+    { id: 2, name: 'الصيف', nameEn: 'summer', icon: '☀️' },
+    { id: 3, name: 'الخريف', nameEn: 'autumn', icon: '🍂' }
+];
+
+const seasonLevels = {
+    winter: {
+        silver: [
+            { id: 0, type: 'money', amount: 500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '500' },
+            { id: 1, type: 'diamond', amount: 5, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '5' },
+            { id: 2, type: 'crop', cropName: 'طماطم', amount: 10, img: 'https://i.ibb.co/nMDkNtR0/Tomatoes.png', val: '10' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 20, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '20' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 1, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '1' },
+            { id: 5, type: 'money', amount: 1000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,000' },
+            { id: 6, type: 'diamond', amount: 10, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '10' },
+            { id: 7, type: 'crop', cropName: 'جزر', amount: 15, img: 'https://i.ibb.co/mCryXpF0/Carrot.png', val: '15' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 15, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '15' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 1, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '1' },
+            { id: 10, type: 'money', amount: 2000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '2,000' },
+            { id: 11, type: 'diamond', amount: 20, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '20' },
+            { id: 12, type: 'crop', cropName: 'فراولة', amount: 10, img: 'https://i.ibb.co/Pvc64024/Strawberry.png', val: '10' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 10, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '10' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 1, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '1' },
+            { id: 15, type: 'ticket', amount: 1, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '1' }
+        ],
+        gold: [
+            { id: 0, type: 'seasonBox', amount: 1, img: 'https://i.ibb.co/1JTt0qw9/Box1.png', val: '1' },
+            { id: 1, type: 'diamond', amount: 15, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '15' },
+            { id: 2, type: 'crop', cropName: 'طماطم', amount: 25, img: 'https://i.ibb.co/nMDkNtR0/Tomatoes.png', val: '25' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 50, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '50' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 2, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '2' },
+            { id: 5, type: 'money', amount: 2500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '2,500' },
+            { id: 6, type: 'diamond', amount: 25, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '25' },
+            { id: 7, type: 'crop', cropName: 'جزر', amount: 35, img: 'https://i.ibb.co/mCryXpF0/Carrot.png', val: '35' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 35, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '35' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 2, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '2' },
+            { id: 10, type: 'money', amount: 5000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '5,000' },
+            { id: 11, type: 'diamond', amount: 50, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '50' },
+            { id: 12, type: 'crop', cropName: 'فراولة', amount: 25, img: 'https://i.ibb.co/Pvc64024/Strawberry.png', val: '25' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 25, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '25' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 2, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '2' },
+            { id: 15, type: 'ticket', amount: 3, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '3' }
+        ]
+    },
+    spring: {
+        silver: [
+            { id: 0, type: 'money', amount: 600, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '600' },
+            { id: 1, type: 'diamond', amount: 8, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '8' },
+            { id: 2, type: 'crop', cropName: 'خيار', amount: 12, img: 'https://i.ibb.co/hx4z0Qs2/Cecamber.png', val: '12' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 25, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '25' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 2, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '2' },
+            { id: 5, type: 'money', amount: 1200, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,200' },
+            { id: 6, type: 'diamond', amount: 15, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '15' },
+            { id: 7, type: 'crop', cropName: 'بصل', amount: 18, img: 'https://i.ibb.co/your-onion.png', val: '18' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 20, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '20' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 2, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '2' },
+            { id: 10, type: 'money', amount: 2500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '2,500' },
+            { id: 11, type: 'diamond', amount: 25, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '25' },
+            { id: 12, type: 'crop', cropName: 'توت', amount: 12, img: 'https://i.ibb.co/your-berry.png', val: '12' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 12, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '12' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 2, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '2' },
+            { id: 15, type: 'ticket', amount: 2, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '2' }
+        ],
+        gold: [
+            { id: 0, type: 'money', amount: 1200, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,200' },
+            { id: 1, type: 'diamond', amount: 20, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '20' },
+            { id: 2, type: 'crop', cropName: 'خيار', amount: 30, img: 'https://i.ibb.co/hx4z0Qs2/Cecamber.png', val: '30' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 60, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '60' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 3, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '3' },
+            { id: 5, type: 'money', amount: 3000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '3,000' },
+            { id: 6, type: 'diamond', amount: 30, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '30' },
+            { id: 7, type: 'crop', cropName: 'بصل', amount: 40, img: 'https://i.ibb.co/your-onion.png', val: '40' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 45, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '45' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 3, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '3' },
+            { id: 10, type: 'money', amount: 6000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '6,000' },
+            { id: 11, type: 'diamond', amount: 60, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '60' },
+            { id: 12, type: 'crop', cropName: 'توت', amount: 30, img: 'https://i.ibb.co/your-berry.png', val: '30' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 30, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '30' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 3, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '3' },
+            { id: 15, type: 'ticket', amount: 5, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '5' }
+        ]
+    },
+    summer: {
+        silver: [
+            { id: 0, type: 'money', amount: 700, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '700' },
+            { id: 1, type: 'diamond', amount: 10, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '10' },
+            { id: 2, type: 'crop', cropName: 'بطيخ', amount: 8, img: 'https://i.ibb.co/your-watermelon.png', val: '8' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 30, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '30' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 2, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '2' },
+            { id: 5, type: 'money', amount: 1500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,500' },
+            { id: 6, type: 'diamond', amount: 18, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '18' },
+            { id: 7, type: 'crop', cropName: 'مانجو', amount: 10, img: 'https://i.ibb.co/your-mango.png', val: '10' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 25, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '25' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 2, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '2' },
+            { id: 10, type: 'money', amount: 3000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '3,000' },
+            { id: 11, type: 'diamond', amount: 30, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '30' },
+            { id: 12, type: 'crop', cropName: 'أناناس', amount: 8, img: 'https://i.ibb.co/your-pineapple.png', val: '8' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 15, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '15' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 2, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '2' },
+            { id: 15, type: 'ticket', amount: 2, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '2' }
+        ],
+        gold: [
+            { id: 0, type: 'money', amount: 1500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,500' },
+            { id: 1, type: 'diamond', amount: 25, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '25' },
+            { id: 2, type: 'crop', cropName: 'بطيخ', amount: 20, img: 'https://i.ibb.co/your-watermelon.png', val: '20' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 75, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '75' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 3, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '3' },
+            { id: 5, type: 'money', amount: 3500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '3,500' },
+            { id: 6, type: 'diamond', amount: 35, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '35' },
+            { id: 7, type: 'crop', cropName: 'مانجو', amount: 25, img: 'https://i.ibb.co/your-mango.png', val: '25' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 55, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '55' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 3, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '3' },
+            { id: 10, type: 'money', amount: 7000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '7,000' },
+            { id: 11, type: 'diamond', amount: 70, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '70' },
+            { id: 12, type: 'crop', cropName: 'أناناس', amount: 20, img: 'https://i.ibb.co/your-pineapple.png', val: '20' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 35, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '35' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 3, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '3' },
+            { id: 15, type: 'ticket', amount: 5, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '5' }
+        ]
+    },
+    autumn: {
+        silver: [
+            { id: 0, type: 'money', amount: 800, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '800' },
+            { id: 1, type: 'diamond', amount: 12, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '12' },
+            { id: 2, type: 'crop', cropName: 'عنب', amount: 12, img: 'https://i.ibb.co/wN80Wz9T/Graps.png', val: '12' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 35, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '35' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 3, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '3' },
+            { id: 5, type: 'money', amount: 1800, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,800' },
+            { id: 6, type: 'diamond', amount: 22, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '22' },
+            { id: 7, type: 'crop', cropName: 'رمان', amount: 12, img: 'https://i.ibb.co/your-pomegranate.png', val: '12' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 30, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '30' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 3, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '3' },
+            { id: 10, type: 'money', amount: 3500, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '3,500' },
+            { id: 11, type: 'diamond', amount: 35, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '35' },
+            { id: 12, type: 'crop', cropName: 'تفاح', amount: 10, img: 'https://i.ibb.co/0RzGnfN1/Apple.png', val: '10' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 18, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '18' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 3, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '3' },
+            { id: 15, type: 'ticket', amount: 3, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '3' }
+        ],
+        gold: [
+            { id: 0, type: 'money', amount: 1800, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '1,800' },
+            { id: 1, type: 'diamond', amount: 30, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '30' },
+            { id: 2, type: 'crop', cropName: 'عنب', amount: 30, img: 'https://i.ibb.co/wN80Wz9T/Graps.png', val: '30' },
+            { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 85, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '85' },
+            { id: 4, type: 'ability', abilityType: 'speed', abilityName: 'النمو السريع', amount: 4, img: 'https://i.ibb.co/vX1M1x3/boost.png', val: '4' },
+            { id: 5, type: 'money', amount: 4000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '4,000' },
+            { id: 6, type: 'diamond', amount: 40, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '40' },
+            { id: 7, type: 'crop', cropName: 'رمان', amount: 30, img: 'https://i.ibb.co/your-pomegranate.png', val: '30' },
+            { id: 8, type: 'product', productType: 'cow', productName: 'حليب', amount: 65, img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png', val: '65' },
+            { id: 9, type: 'ability', abilityType: 'double', abilityName: 'النضج الجيد', amount: 4, img: 'https://i.ibb.co/YyYh4f0/box.png', val: '4' },
+            { id: 10, type: 'money', amount: 8000, img: 'https://i.ibb.co/N6GXqGpk/Money.png', val: '8,000' },
+            { id: 11, type: 'diamond', amount: 80, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '80' },
+            { id: 12, type: 'crop', cropName: 'تفاح', amount: 25, img: 'https://i.ibb.co/0RzGnfN1/Apple.png', val: '25' },
+            { id: 13, type: 'product', productType: 'sheep', productName: 'صوف', amount: 40, img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png', val: '40' },
+            { id: 14, type: 'ability', abilityType: 'instant', abilityName: 'موسم الحصاد', amount: 4, img: 'https://i.ibb.co/3ykS8Vv/keys.png', val: '4' },
+            { id: 15, type: 'ticket', amount: 6, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '6' }
+        ]
+    }
+};
+
+let goldTickets = 50;
+let currentSeasonIndex = 0;
+let seasonStartTime = null;
+let seasonEndTime = null;
+let seasonTimerInterval = null;
+
+let currentSeasonData = null;
+let collectedSilver = {};
+let collectedGold = {};
+let goldTicketPurchased = false;
+let currentLevelSeason = 1;
+let currentLevelXPSeason = 0;
+let allLevelsCompletedSeason = false;
+let accumulatedBoxes = 0;
+let extraXP = 0;
+
+const XP_PER_LEVEL = 5000;
+const XP_PER_BOX = 10000;
+
+function updateGoldTicketsDisplay() {
+    const ticketCount = document.getElementById('goldTicketCount');
+    if (ticketCount) ticketCount.textContent = goldTickets;
+}
+
+function updateSeasonCircle() {
+    const seasonCircle = document.getElementById('seasonRewardCircle');
+    
+    if (allLevelsCompletedSeason || currentLevelSeason > 16) {
+        seasonCircle.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = 'https://i.ibb.co/1JTt0qw9/Box1.png';
+        img.style.width = '80%';
+        img.style.height = '80%';
+        img.style.objectFit = 'contain';
+        seasonCircle.appendChild(img);
+    } else if (currentLevelSeason === 1 && currentLevelXPSeason === 0 && !allLevelsCompletedSeason) {
+        seasonCircle.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = 'https://i.ibb.co/S7QZWhhm/1775980917122.png';
+        img.style.width = '70%';
+        img.style.height = '70%';
+        img.style.objectFit = 'contain';
+        seasonCircle.appendChild(img);
+    } else {
+        let displayNumber = currentLevelSeason - 1;
+        if (displayNumber < 0) displayNumber = 0;
+        
+        seasonCircle.innerHTML = '';
+        const textSpan = document.createElement('span');
+        textSpan.innerText = displayNumber;
+        textSpan.style.fontSize = '18px';
+        textSpan.style.fontWeight = '900';
+        textSpan.style.color = '#4e3421';
+        textSpan.style.textShadow = '1px 1px 0 rgba(255,255,255,0.5)';
+        seasonCircle.appendChild(textSpan);
+    }
+}
+
+function updateUIForSeason() {
+    const season = seasons[currentSeasonIndex];
+    document.getElementById('seasonNameLabel').innerText = `موسم ${season.name}`;
+    document.getElementById('seasonCityName').innerText = season.name;
+}
+
+function startNewSeason(seasonIndex) {
+    currentSeasonIndex = seasonIndex;
+    seasonStartTime = Date.now();
+    seasonEndTime = seasonStartTime + (8 * 24 * 60 * 60 * 1000);
+    
+    const season = seasons[seasonIndex];
+    currentSeasonData = seasonLevels[season.nameEn];
+    
+    collectedSilver = {};
+    collectedGold = {};
+    goldTicketPurchased = false;
+    currentLevelSeason = 1;
+    currentLevelXPSeason = 0;
+    allLevelsCompletedSeason = false;
+    extraXP = 0;
+    accumulatedBoxes = 0;
+    
+    updateUIForSeason();
+    updateSeasonCircle();
+    updateXPDisplaySeason();
+    updateGoldTicketsDisplay();
+    updateBoxCounterDisplaySeason();
+    buildSeason();
+    startSeasonTimer();
+    
+    showNotify(`🎉 بدأ موسم ${season.name}! 🎉`);
+}
+
+function startSeasonTimer() {
+    if (seasonTimerInterval) clearInterval(seasonTimerInterval);
+    
+    function updateSeasonTimer() {
+        const now = Date.now();
+        const diff = seasonEndTime - now;
+        
+        if (diff <= 0) {
+            clearInterval(seasonTimerInterval);
+            let nextIndex = (currentSeasonIndex + 1) % seasons.length;
+            startNewSeason(nextIndex);
+            return;
+        }
+        
+        let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((diff % (86400000)) / 3600000);
+        let mins = Math.floor((diff % 3600000) / 60000);
+        let secs = Math.floor((diff % 60000) / 1000);
+        
+        document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${mins}m ${secs}s`;
+    }
+    
+    updateSeasonTimer();
+    seasonTimerInterval = setInterval(updateSeasonTimer, 1000);
+}
+
+function openPurchaseModal(event) {
+    event.stopPropagation();
+    if (goldTicketPurchased) {
+        showNotify("✨ تم شراء التذكرة الذهبية بالفعل! ✨");
+        return;
+    }
+    document.getElementById('purchaseOverlay').classList.add('active');
+}
+
+function closePurchaseModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    document.getElementById('purchaseOverlay').classList.remove('active');
+}
+
+function confirmPurchase() {
+    if (goldTickets >= 50) {
+        goldTickets -= 50;
+        goldTicketPurchased = true;
+        updateGoldTicketsDisplay();
+        showNotify("🎉 تم شراء التذكرة الذهبية بنجاح! 🎉");
+        closePurchaseModal();
+        
+        const goldSub = document.querySelector('.ticket-sub-gold');
+        if (goldSub) {
+            goldSub.textContent = "تم الشراء";
+            goldSub.style.cursor = "default";
+            goldSub.style.opacity = "0.7";
+            goldSub.onclick = null;
+        }
+        buildSeason();
+    } else {
+        showNotify(`⚠️ ليس لديك تذاكر كافية! تحتاج ${50 - goldTickets} تذكرة ذهبية ⚠️`);
+    }
+}
+
+function updateXPDisplaySeason() {
+    let percent, xpText;
+    
+    if (allLevelsCompletedSeason || currentLevelSeason > 16) {
+        percent = (extraXP % XP_PER_BOX) / (XP_PER_BOX / 100);
+        xpText = `${extraXP % XP_PER_BOX}/${XP_PER_BOX}`;
+        document.getElementById('progressText').innerHTML = xpText;
+        document.getElementById('progressFill').style.width = percent + '%';
+        
+        const btnFill = document.getElementById('btnProgressFill');
+        const btnXP = document.getElementById('btnXPProgress');
+        if (btnFill) btnFill.style.width = percent + '%';
+        if (btnXP) btnXP.innerHTML = `${extraXP % XP_PER_BOX}/${XP_PER_BOX} XP`;
+    } else {
+        percent = (currentLevelXPSeason / XP_PER_LEVEL) * 100;
+        xpText = `${currentLevelXPSeason}/${XP_PER_LEVEL}`;
+        document.getElementById('progressText').innerHTML = xpText;
+        document.getElementById('progressFill').style.width = percent + '%';
+        
+        const btnFill = document.getElementById('btnProgressFill');
+        const btnXP = document.getElementById('btnXPProgress');
+        if (btnFill) btnFill.style.width = percent + '%';
+        if (btnXP) btnXP.innerHTML = `${currentLevelXPSeason}/${XP_PER_LEVEL} XP`;
+    }
+}
+
+function addSeasonXP(amount) {
+    if (!allLevelsCompletedSeason && currentLevelSeason <= 16) {
+        let newXP = currentLevelXPSeason + amount;
+        
+        while (newXP >= XP_PER_LEVEL && currentLevelSeason < 16) {
+            newXP -= XP_PER_LEVEL;
+            currentLevelSeason++;
+            const completedLevel = currentLevelSeason - 1;
+            unlockRewardsForLevelSeason(completedLevel);
+            showNotify(`🎉 انتقلت إلى المستوى ${completedLevel} في الموسم! 🎉`);
+        }
+        
+        if (currentLevelSeason >= 16 && newXP >= XP_PER_LEVEL) {
+            currentLevelSeason = 16;
+            newXP = 0;
+            allLevelsCompletedSeason = true;
+            unlockRewardsForLevelSeason(15);
+            showNotify(`🎉 مبروك! أكملت جميع مستويات الموسم! 🎉`);
+            
+            let remainingXP = newXP;
+            if (remainingXP > 0) {
+                extraXP = remainingXP;
+                let newBoxes = Math.floor(extraXP / XP_PER_BOX);
+                if (newBoxes > 0) {
+                    accumulatedBoxes += newBoxes;
+                    extraXP = extraXP % XP_PER_BOX;
+                    showNotify(`📦 حصلت على ${newBoxes} صندوق موسمي! المجموع: ${accumulatedBoxes} 📦`);
+                }
+            }
+        } else {
+            currentLevelXPSeason = newXP;
+        }
+        
+        updateXPDisplaySeason();
+        updateSeasonCircle();
+        updateBoxCounterDisplaySeason();
+    } else {
+        extraXP += amount;
+        let newBoxes = Math.floor(extraXP / XP_PER_BOX);
+        if (newBoxes > 0) {
+            accumulatedBoxes += newBoxes;
+            extraXP = extraXP % XP_PER_BOX;
+            showNotify(`📦 حصلت على ${newBoxes} صندوق موسمي! المجموع: ${accumulatedBoxes} 📦`);
+            updateBoxCounterDisplaySeason();
+        }
+        updateXPDisplaySeason();
+    }
+}
+
+function unlockRewardsForLevelSeason(level) {
+    const silverDiv = document.querySelector(`.reward-silver[data-level='${level}']`);
+    const goldDiv = document.querySelector(`.reward-gold[data-level='${level}']`);
+    
+    if (silverDiv && !collectedSilver[level]) {
+        silverDiv.classList.remove('locked');
+        silverDiv.classList.add('ready');
+    }
+    if (goldDiv && !collectedGold[level] && goldTicketPurchased) {
+        goldDiv.classList.remove('locked');
+        goldDiv.classList.add('ready');
+    }
+}
+
+function canCollectSilverSeason(level) {
+    if (level === 0) return true;
+    if (level > currentLevelSeason) return false;
+    if (level === currentLevelSeason && currentLevelXPSeason < XP_PER_LEVEL && currentLevelSeason <= 16) return false;
+    return true;
+}
+
+function canCollectGoldSeason(level) {
+    if (!goldTicketPurchased) return false;
+    if (level === 0) return true;
+    if (level > currentLevelSeason) return false;
+    if (level === currentLevelSeason && currentLevelXPSeason < XP_PER_LEVEL && currentLevelSeason <= 16) return false;
+    return true;
+}
+
+function collectSilverSeason(level, rewardData) {
+    if (collectedSilver[level]) {
+        showNotify(`⚠️ لقد حصلت على هذه الجائزة بالفعل!`);
+        return;
+    }
+    
+    if (!canCollectSilverSeason(level)) {
+        if (level === currentLevelSeason && currentLevelXPSeason < XP_PER_LEVEL && currentLevelSeason <= 16) {
+            showNotify(`🔒 تحتاج إلى ${XP_PER_LEVEL - currentLevelXPSeason} XP إضافية لإكمال المستوى ${level}!`);
+        } else if (level > currentLevelSeason) {
+            showNotify(`🔒 يجب الوصول إلى المستوى ${level} أولاً!`);
+        }
+        return;
+    }
+    
+    collectedSilver[level] = true;
+    
+    const element = document.querySelector(`.reward-silver[data-level='${level}']`);
+    element.classList.remove('ready');
+    element.classList.add('collected');
+    
+    let rewards = {};
+    
+    switch(rewardData.type) {
+        case 'money':
+            money += rewardData.amount;
+            updateUI();
+            rewards.money = rewardData.amount;
+            break;
+        case 'diamond':
+            diamonds += rewardData.amount;
+            updateUI();
+            rewards.diamond = rewardData.amount;
+            break;
+        case 'crop':
+            if (cropInventory[rewardData.cropName] !== undefined) {
+                cropInventory[rewardData.cropName] += rewardData.amount;
+                rewards.crop = { img: rewardData.img, amount: rewardData.amount, name: rewardData.cropName };
+            }
+            break;
+        case 'product':
+            if (inventory[rewardData.productType] !== undefined) {
+                inventory[rewardData.productType] += rewardData.amount;
+                rewards.product = { img: rewardData.img, amount: rewardData.amount, name: rewardData.productName };
+            }
+            break;
+        case 'ability':
+            if (abilities[rewardData.abilityType] !== undefined) {
+                abilities[rewardData.abilityType] += rewardData.amount;
+                updateAbilitiesDisplay();
+                rewards.ability = { type: rewardData.abilityType, amount: rewardData.amount, name: rewardData.abilityName };
+            }
+            break;
+        case 'ticket':
+            goldTickets += rewardData.amount;
+            updateGoldTicketsDisplay();
+            rewards.ticket = rewardData.amount;
+            break;
+        case 'seasonBox':
+            for (let i = 0; i < rewardData.amount; i++) {
+                window.open('box1.html', '_blank');
+            }
+            rewards.seasonBox = rewardData.amount;
+            break;
+    }
+    
+    showRewardNotification(rewards);
+    
+    const goldDiv = document.querySelector(`.reward-gold[data-level='${level}']`);
+    if (goldDiv && !collectedGold[level] && goldTicketPurchased) {
+        goldDiv.classList.remove('locked');
+        goldDiv.classList.add('ready');
+    }
+}
+
+function collectGoldSeason(level, rewardData) {
+    if (collectedGold[level]) {
+        showNotify(`⚠️ لقد حصلت على هذه الجائزة بالفعل!`);
+        return;
+    }
+    
+    if (!canCollectGoldSeason(level)) {
+        if (!goldTicketPurchased) {
+            showNotify(`أشتري التذكرة الذهبية لتحصيل هذه المكافأة`);
+        } else if (level === currentLevelSeason && currentLevelXPSeason < XP_PER_LEVEL && currentLevelSeason <= 16) {
+            showNotify(`🔒 تحتاج إلى ${XP_PER_LEVEL - currentLevelXPSeason} XP إضافية لإكمال المستوى ${level}!`);
+        } else if (level > currentLevelSeason) {
+            showNotify(`🔒 يجب الوصول إلى المستوى ${level} أولاً!`);
+        }
+        return;
+    }
+    
+    collectedGold[level] = true;
+    
+    const element = document.querySelector(`.reward-gold[data-level='${level}']`);
+    element.classList.remove('ready');
+    element.classList.add('collected');
+    
+    let rewards = {};
+    
+    switch(rewardData.type) {
+        case 'money':
+            money += rewardData.amount;
+            updateUI();
+            rewards.money = rewardData.amount;
+            break;
+        case 'diamond':
+            diamonds += rewardData.amount;
+            updateUI();
+            rewards.diamond = rewardData.amount;
+            break;
+        case 'crop':
+            if (cropInventory[rewardData.cropName] !== undefined) {
+                cropInventory[rewardData.cropName] += rewardData.amount;
+                rewards.crop = { img: rewardData.img, amount: rewardData.amount, name: rewardData.cropName };
+            }
+            break;
+        case 'product':
+            if (inventory[rewardData.productType] !== undefined) {
+                inventory[rewardData.productType] += rewardData.amount;
+                rewards.product = { img: rewardData.img, amount: rewardData.amount, name: rewardData.productName };
+            }
+            break;
+        case 'ability':
+            if (abilities[rewardData.abilityType] !== undefined) {
+                abilities[rewardData.abilityType] += rewardData.amount;
+                updateAbilitiesDisplay();
+                rewards.ability = { type: rewardData.abilityType, amount: rewardData.amount, name: rewardData.abilityName };
+            }
+            break;
+        case 'ticket':
+            goldTickets += rewardData.amount;
+            updateGoldTicketsDisplay();
+            rewards.ticket = rewardData.amount;
+            break;
+        case 'seasonBox':
+            for (let i = 0; i < rewardData.amount; i++) {
+                window.open('box1.html', '_blank');
+            }
+            rewards.seasonBox = rewardData.amount;
+            break;
+    }
+    
+    showRewardNotification(rewards);
+}
+
+function updateBoxCounterDisplaySeason() {
+    const boxCounter = document.getElementById('boxCounter');
+    if (boxCounter) {
+        if (allLevelsCompletedSeason || currentLevelSeason > 16) {
+            boxCounter.style.display = 'block';
+            boxCounter.querySelector('span').innerHTML = `الصناديق لديك: ${accumulatedBoxes}`;
+        } else {
+            boxCounter.style.display = 'none';
+        }
+    }
+}
+
+function openFinalBoxSeason() {
+    if (!allLevelsCompletedSeason && currentLevelSeason <= 16) {
+        showNotify(`🔒 يجب إكمال جميع مستويات الموسم أولاً! (المستوى الحالي: ${currentLevelSeason - 1}/16)`);
+        return;
+    }
+    
+    if (accumulatedBoxes <= 0) {
+        showNotify(`📦 ليس لديك صناديق موسمية! اجمع ${XP_PER_BOX} XP للحصول على صندوق 📦`);
+        return;
+    }
+    
+    window.open('box1.html', '_blank');
+    
+    accumulatedBoxes--;
+    updateBoxCounterDisplaySeason();
+    updateXPDisplaySeason();
+    
+    showNotify(`🎁 تم فتح صندوق موسمي! تبقى لديك ${accumulatedBoxes} صندوق 🎁`);
+}
+
+function openSeason() {
+    document.getElementById('seasonOverlay').classList.add('active');
+    updateGoldTicketsDisplay();
+    updateSeasonCircle();
+    setTimeout(() => buildSeason(), 50);
+}
+
+function closeSeason() {
+    document.getElementById('seasonOverlay').classList.remove('active');
+}
+
+function buildSeason() {
+    const container = document.getElementById('levelsList');
+    if (!container || !currentSeasonData) return;
+    container.innerHTML = '';
+    
+    for (let index = 0; index < currentSeasonData.silver.length; index++) {
+        const silverLevel = currentSeasonData.silver[index];
+        const goldLevel = currentSeasonData.gold[index];
+        
+        const row = document.createElement('div');
+        row.className = 'level-row';
+        
+        const cardBg = document.createElement('div');
+        cardBg.className = 'card-back';
+        row.appendChild(cardBg);
+        
+        const isSilverCollected = collectedSilver[index] === true;
+        const isGoldCollected = collectedGold[index] === true;
+        
+        let isLevelUnlocked = false;
+        if (index === 0) {
+            isLevelUnlocked = true;
+        } else {
+            isLevelUnlocked = (index < currentLevelSeason);
+        }
+        
+        const isReadyForSilver = isLevelUnlocked;
+        const isReadyForGold = (goldTicketPurchased && isLevelUnlocked);
+        
+        const leftCol = document.createElement('div');
+        leftCol.className = 'left-col';
+        
+        const silverDiv = document.createElement('div');
+        silverDiv.className = 'reward-silver';
+        silverDiv.setAttribute('data-level', index);
+        
+        if (isSilverCollected) {
+            silverDiv.classList.add('collected');
+        } else if (isReadyForSilver) {
+            silverDiv.classList.add('ready');
+        } else {
+            silverDiv.classList.add('locked');
+        }
+        
+        silverDiv.innerHTML = `
+            <div class="lock-corner"></div>
+            <div class="check-corner"></div>
+            <img class="reward-img" src="${silverLevel.img}" alt="reward">
+            <span class="reward-value">${silverLevel.val}</span>
+        `;
+        silverDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            collectSilverSeason(index, silverLevel);
+        });
+        leftCol.appendChild(silverDiv);
+        
+        const centerCol = document.createElement('div');
+        centerCol.className = 'center-col';
+        
+        const tierDiv = document.createElement('div');
+        tierDiv.className = 'tier-circle';
+        if (index === 0) {
+            tierDiv.innerHTML = `<img src="https://i.ibb.co/S7QZWhhm/1775980917122.png" alt="gift" style="width:70%; height:70%; object-fit:contain;">`;
+        } else {
+            tierDiv.innerText = silverLevel.id;
+        }
+        centerCol.appendChild(tierDiv);
+        
+        const rightCol = document.createElement('div');
+        rightCol.className = 'right-col';
+        
+        const goldDiv = document.createElement('div');
+        goldDiv.className = 'reward-gold';
+        goldDiv.setAttribute('data-level', index);
+        
+        if (isGoldCollected) {
+            goldDiv.classList.add('collected');
+        } else if (isReadyForGold) {
+            goldDiv.classList.add('ready');
+        } else {
+            goldDiv.classList.add('locked');
+        }
+        
+        goldDiv.innerHTML = `
+            <div class="lock-corner"></div>
+            <div class="check-corner"></div>
+            <img class="reward-img" src="${goldLevel.img}" alt="reward">
+            <span class="reward-value">${goldLevel.val}</span>
+        `;
+        goldDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            collectGoldSeason(index, goldLevel);
+        });
+        rightCol.appendChild(goldDiv);
+        
+        row.appendChild(leftCol);
+        row.appendChild(centerCol);
+        row.appendChild(rightCol);
+        container.appendChild(row);
+    }
+    
+    const finalRow = document.createElement('div');
+    finalRow.className = 'final-box-row';
+    
+    const finalCardBg = document.createElement('div');
+    finalCardBg.className = 'card-back';
+    finalCardBg.style.background = "linear-gradient(145deg, #e9d6a7, #c9a03d)";
+    finalRow.appendChild(finalCardBg);
+    
+    const finalBox = document.createElement('div');
+    finalBox.className = 'final-box';
+    finalBox.id = 'finalBoxElement';
+    finalBox.innerHTML = `
+        <img src="https://i.ibb.co/1JTt0qw9/Box1.png" alt="صندوق الجوائز">
+        <div class="box-counter" id="boxCounter">
+            <span>الصناديق لديك: ${accumulatedBoxes}</span>
+        </div>
+    `;
+    finalBox.onclick = openFinalBoxSeason;
+    finalRow.appendChild(finalBox);
+    
+    const textContainer = document.createElement('div');
+    textContainer.className = 'final-box-text-container';
+    textContainer.innerHTML = `
+        <div class="final-box-title">
+            <span></span> الصناديق الموسمية
+        </div>
+        <div class="final-box-desc">المزيد من الجوائز غير المحدودة</div>
+        <div class="final-box-note">متاحة للتذكرتين الفضية والذهبية</div>
+    `;
+    finalRow.appendChild(textContainer);
+    
+    container.appendChild(finalRow);
+    
+    const boxCounter = document.getElementById('boxCounter');
+    if (boxCounter) {
+        if (allLevelsCompletedSeason || currentLevelSeason > 16) {
+            boxCounter.style.display = 'block';
+        } else {
+            boxCounter.style.display = 'none';
+        }
+    }
+    
+    const existingLine = container.querySelector('.vertical-brown-line');
+    if (existingLine) existingLine.remove();
+    
+    const verticalLine = document.createElement('div');
+    verticalLine.className = 'vertical-brown-line';
+    container.appendChild(verticalLine);
+    
+    const updateLineHeight = () => {
+        if (verticalLine && container) {
+            const children = container.children;
+            let totalHeight = 0;
+            
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                if (child.classList && child.classList.contains('final-box-row')) break;
+                if (child !== verticalLine && child.offsetHeight) {
+                    if (i === children.length - 2 || (child.classList && child.classList.contains('level-row') && i === 15)) {
+                        totalHeight += child.offsetHeight / 2;
+                    } else {
+                        totalHeight += child.offsetHeight;
+                    }
+                }
+            }
+            verticalLine.style.height = (totalHeight - 29) + 'px';
+        }
+    };
+    
+    setTimeout(updateLineHeight, 100);
+    window.addEventListener('resize', () => setTimeout(updateLineHeight, 50));
+    new ResizeObserver(() => updateLineHeight()).observe(container);
+}
+
+startNewSeason(0);
+
+function showRewardNotification(rewards) {
+    const notification = document.createElement('div');
+    notification.className = 'task-reward-notification';
+    
+    let rewardHtml = '';
+    
+    if (rewards.money && rewards.money > 0) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="https://i.ibb.co/N6GXqGpk/Money.png" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.money}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.diamond && rewards.diamond > 0) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.diamond}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.crop) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="${rewards.crop.img}" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.crop.amount}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.product) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="${rewards.product.img}" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.product.amount}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.ability) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="${abilitiesData[rewards.ability.type].img}" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.ability.amount}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.ticket && rewards.ticket > 0) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="https://i.ibb.co/TDvVfxxb/Teket.png" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.ticket}</div>
+            </div>
+        `;
+    }
+    
+    if (rewards.seasonBox && rewards.seasonBox > 0) {
+        rewardHtml += `
+            <div class="reward-float-item">
+                <img src="https://i.ibb.co/1JTt0qw9/Box1.png" class="reward-float-img">
+                <div class="reward-float-amount">+${rewards.seasonBox}</div>
+            </div>
+        `;
+    }
+    
+    notification.innerHTML = `
+        <div class="task-complete-title">حصلت على</div>
+        <div class="rewards-float-container">${rewardHtml}</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 500);
+    }, 2500);
+}
+
+// ربط أزرار البيع
+document.addEventListener('DOMContentLoaded', function() {
+    const sellDecrease = document.getElementById('sellDecreaseQty');
+    const sellIncrease = document.getElementById('sellIncreaseQty');
+    const sellMax = document.getElementById('sellMaxQty');
+    const sellConfirm = document.getElementById('sellConfirmBtn');
+    
+    if (sellDecrease) sellDecrease.onclick = () => changeSellQty(-1);
+    if (sellIncrease) sellIncrease.onclick = () => changeSellQty(1);
+    if (sellMax) sellMax.onclick = () => setSellMaxQty();
+    if (sellConfirm) sellConfirm.onclick = () => confirmSell();
+    
+    const traderDecrease = document.getElementById('traderDecreaseQty');
+    const traderIncrease = document.getElementById('traderIncreaseQty');
+    const traderMax = document.getElementById('traderMaxQty');
+    const traderConfirm = document.getElementById('traderSellConfirmBtn');
+    
+    if (traderDecrease) traderDecrease.onclick = () => changeTraderSellQty(-1);
+    if (traderIncrease) traderIncrease.onclick = () => changeTraderSellQty(1);
+    if (traderMax) traderMax.onclick = () => setTraderSellMaxQty();
+    if (traderConfirm) traderConfirm.onclick = () => confirmTraderSell();
+});
+
+// بدء اللعبة
+updateUI();
+initTrader();
+updateAbilitiesDisplay();
+selectRandomEvent();
+اخر تعديلاتي
