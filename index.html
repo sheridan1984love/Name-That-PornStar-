@@ -1,3 +1,2304 @@
+عدلت الكثير من التعديلات العامة التي لا اريدك ان تغييرها
+
+<!DOCTYPE html>      
+<html lang="ar">      
+<head>      
+    <meta charset="UTF-8">      
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">      
+    <title>Farm life</title>      
+    <style>      
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');      
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }      
+              
+        body {      
+            margin: 0; display: flex; justify-content: center; align-items: center;      
+            height: 100vh; background-color: #121212; overflow: hidden; font-family: 'Cairo', sans-serif;      
+        }      
+      
+        .game-container {      
+            position: relative; width: 100vw; height: 100vh; max-width: 1000px;      
+            background-image: url('https://i.ibb.co/Ps8yzvMx/137-20260125214053.png'); background-size: 100% 100%;      
+        }      
+
+        /* --- شريط العملات --- */      
+        .money-bar-container {      
+            position: absolute; top: 5px; right: 10px; z-index: 100;      
+            width: 140px; height: 42px; background: linear-gradient(145deg, #c49a7c, #a67c5f);      
+            border: 3px solid #4e3421; border-radius: 25px; display: flex; align-items: center;      
+            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);      
+            flex-direction: row; justify-content: space-between;      
+        }      
+        .money-icon-only { width: 40px; height: 40px; background-image: url('https://i.ibb.co/N6GXqGpk/Money.png'); background-size: contain; background-repeat: no-repeat; order: 2; }      
+        #moneyDisplay { color: #ffffff; font-size: 18px; text-shadow: 1px 1px 2px #000; order: 1; flex-grow: 1; text-align: center; }      
+      
+        .diamond-bar-container {      
+            position: absolute; top: 50px; right: 10px; z-index: 100;      
+            width: 140px; height: 42px; background: linear-gradient(145deg, #c49a7c, #a67c5f);      
+            border: 3px solid #4e3421; border-radius: 25px; display: flex; align-items: center;      
+            padding: 0 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);      
+            flex-direction: row; justify-content: space-between;      
+        }      
+        .diamond-icon-only { width: 40px; height: 40px; background-image: url('https://i.ibb.co/KjKrKK3T/1774202167159.png'); background-size: contain; background-repeat: no-repeat; order: 2; }      
+        #diamondDisplay { color: #ffffff; font-size: 18px; text-shadow: 1px 1px 2px #000; order: 1; flex-grow: 1; text-align: center; }      
+        
+        /* --- البروفايل --- */      
+        .profile-container { position: absolute; left: 10px; top: 5px; display: flex; align-items: center; z-index: 100; cursor: pointer; }      
+        .profile-circle { width: 65px; height: 65px; background-color: #c49a7c; border: 4px solid #4e3421; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center; z-index: 2; }      
+        .profile-circle img { width: 100%; height: 100%; object-fit: cover; }      
+        .level-oval { margin-left: -25px; padding: 0 15px 0 30px; height: 40px; background-color: #c49a7c; border: 3px solid #4e3421; border-radius: 18px; display: flex; align-items: center; z-index: 1; gap: 8px; }      
+        .level-txt { color: #4e3421; font-weight: bold; font-size: 13px; }      
+        .exp-bar-bg { width: 60px; height: 8px; background-color: #3e2716; border-radius: 4px; overflow: hidden; border: 1px solid #4e3421; }      
+        .exp-bar-fill { width: 0%; height: 100%; background-color: #28a745; transition: width 0.3s; }      
+      
+        /* --- لوحة الإحصائيات --- */      
+        .info-panel {       
+            position: absolute; top: 90px; left: 15px; width: calc(100% - 30px);       
+            background-color: #c49a7c; border: 6px solid #4e3421; border-radius: 25px;       
+            padding: 20px; display: none; z-index: 150; text-align: right;      
+        }      
+        .info-panel.active { display: block; animation: slideDown 0.3s ease; }      
+        .info-panel::before {      
+            content: ""; position: absolute; top: -22px; left: 35px;      
+            border-left: 15px solid transparent; border-right: 15px solid transparent;      
+            border-bottom: 18px solid #4e3421;      
+        }      
+      
+        .name-box { display: flex; justify-content: space-between; padding: 10px; background-color: rgba(255, 255, 255, 0.2); border-radius: 10px; color: #4e3421; font-weight: bold; flex-direction: row-reverse; }      
+        .brown-line { width: 100%; height: 3px; background-color: #4e3421; margin: 12px 0; }      
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }      
+        .stat-square { background-color: rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; color: #4e3421; font-weight: bold; text-align: center; }      
+        .stat-square span:first-child { font-size: 10px; opacity: 0.8; margin-bottom: 3px; }      
+
+        /* --- المزرعة --- */      
+        .farm-grid { 
+            position: absolute; top: 25.5%; left: 9.5%; width: 100%; height: 100%; 
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); gap: 4px; 
+            aspect-ratio: 4 / 5; max-width: min(100vh, 81%); max-height: min(100vw, 52%);
+        }
+        .tile { position: relative; border: 3px dashed rgba(0,0,0,0.15); border-radius: 12px; cursor: pointer; box-sizing: border-box; overflow: hidden; z-index: 1; }      
+        .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.3s; border-radius: inherit; }      
+        .is-grass .layer-grass { opacity: 1; }      
+        .layer-grass { background-image: url('https://i.ibb.co/Xr77yQ9m/seamless-textured-grass-background-on-the-lawn-natural-organic-grass-pattern-vector.jpg'); }      
+        .is-soil .layer-soil { opacity: 1; }      
+        .layer-soil { background-image: url('https://i.ibb.co/r28zj7Kx/ground-seamless-texture-game-ui-for-the-game-farm-brown-background-of-cultivated-land-vector.jpg'); }      
+        .is-crop .layer-crop { opacity: 1; transform: scale(1); }      
+        .layer-crop { background-size: 80%; background-repeat: no-repeat; transform: scale(0); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }      
+
+        /* --- شريط الوقت --- */      
+        .growth-timer-container { position: absolute; bottom: 2px; left: 0; width: 100%; display: none; flex-direction: column; align-items: center; z-index: 5; }      
+        .time-text { color: white; font-size: 8px; background: rgba(0,0,0,0.7); padding: 0 2px; border-radius: 2px; }      
+        .progress-bar { width: 85%; height: 4px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden; }      
+        .progress-fill { width: 0%; height: 100%; background: #2ecc71; }      
+
+        /* --- قائمة السلة --- */      
+        .selector-wrapper { position: absolute; bottom: 80px; right: 20px; display: flex; align-items: center; z-index: 100; flex-direction: column; }      
+        .circle-btn { width: 75px; height: 75px; background: #c49a7c; border: 4px solid #4e3421; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 5; }      
+        .menu-bar { position: absolute; bottom: 50px; width: 70px; height: 0; background: #c49a7c; border: 4px solid #4e3421; border-radius: 35px 35px 0 0; transition: 0.4s; overflow: hidden; display: flex; justify-content: flex-start; }      
+        .active .menu-bar { height: 320px; }      
+        .menu-content { display: flex; flex-direction: column; padding-top: 0px; opacity: 0; transition: 0.3s; overflow-y: auto; align-items: center; }      
+        .active .menu-content { opacity: 1; }      
+        .menu-item { display: flex; flex-direction: column; align-items: center; margin: 5px 0; cursor: pointer; width: 60px; text-align: center; }      
+        .menu-item img { width: 60px; height: 60px; object-fit: contain; display: block; margin: 0 auto; }      
+        .crop-name { margin-top: 5px; font-size: 11px; text-align: center; color: #000; max-width: 65px; word-break: break-word; white-space: normal; line-height: 1.5; display: block; }      
+        .menu-item:last-child { margin-bottom: 20px; }
+
+        /* --- نظام الإشعارات --- */      
+        .game-notification { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background-color: #4e3421; color: #e39a75; padding: 15px 25px; border-radius: 15px; 
+            z-index: 1000; font-weight: bold; text-align: center; pointer-events: none; 
+            animation: fadeInOut 2s forwards; box-shadow: 0 5px 15px rgba(0,0,0,0.5); direction: rtl; 
+        }   
+        
+        /* نافذة معلومات المحصول */
+        #infoOverlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; 
+            z-index: 200; opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        #infoOverlay.active { opacity: 1; visibility: visible; }
+        .info-card { 
+            width: 280px; background-color: #c49a7c; border: 8px solid #4e3421; border-radius: 35px; 
+            padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: right;
+            transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #infoOverlay.active .info-card { transform: translateY(0); }     
+        
+        .detail-row { display: flex; width: 100%; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.1); flex-direction: row-reverse; color: #4e3421; font-weight: bold; }      
+        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 1.5s forwards; z-index: 101; display: flex; align-items: center; gap: 3px; font-size: 20px; }      
+        .floating-icon { width: 24px; height: 24px; background-image: url('https://i.ibb.co/N6GXqGpk/Money.png'); background-size: contain; background-repeat: no-repeat; }      
+              
+        .farmer { position: absolute; width: 65px; height: 65px; background-image: url('https://i.ibb.co/ynpD8z6g/image.gif'); background-size: contain; background-repeat: no-repeat; z-index: 80; transition: left 2.5s linear, top 2.5s linear, transform 0.3s ease-in-out; cursor: pointer; transform-origin: center; }      
+        .farmer.is-walking { background-image: url('https://i.ibb.co/jkxh4P16/farmer-walking-animation.gif'); }      
+      
+        .road-area { position: absolute; bottom: 20px; left: 0; width: 100%; height: 80px; background-image: url('https://i.ibb.co/Z6c1bwFM/Rode.png'); background-size: cover; z-index: 10; }      
+        .car { position: absolute; top: 15px; width: 100px; height: 50px; background-image: url('https://i.ibb.co/MkPTN9PP/Car.png'); background-size: contain; background-repeat: no-repeat; z-index: 11; }      
+      
+        .barns-container { position: absolute; top: 0px; left: 0; width: 100%; display: flex; justify-content: space-evenly; z-index: 0; }      
+        .barn { width: 500px; height: 300px; background-image: url('https://i.ibb.co/0j1m6T5c/1769423448597.png'); background-size: contain; background-repeat: no-repeat; cursor: pointer; }      
+
+        /* --- زر الإنجازات --- */
+        .bottom-left-nav { position: absolute; bottom: 2px; left: 20px; z-index: 50; }
+        .wood-btn { width: 75px; height: 75px; background-color: #c49a7c; border: 4px solid #4e3421; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .wood-btn img { width: 70%; }
+
+        /* --- شاشة الإنجازات --- */
+        .full-overlay { position: fixed; inset: 0; background-color: #f7edd4; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.35s ease; z-index: 200; }
+        .full-overlay.active { transform: translateY(0); }
+        .wood-header { height: 100px; background: linear-gradient(#7d5638,#4e3421); display: flex; justify-content: center; align-items: center; position: relative; }
+        .header-title-box { color: #fff; border: 3px solid #c49a7c; border-radius: 50px; padding: 6px 40px; font-weight: bold; }
+        .close-circle { position: absolute; right: 20px; width: 45px; height: 45px; background: #c49a7c; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 22px; }
+        .overlay-content { padding: 15px; overflow-y: auto; flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; 
+        }
+        
+        /* كرت الإنجاز الجديد */
+        .achievement-card { 
+            display: flex; 
+            flex-direction: column;
+            align-items: stretch; 
+            background-color: #c49a7c; 
+            border: 3px solid #4e3421; 
+            border-radius: 12px; 
+            padding: 10px 12px; 
+            gap: 8px; 
+            color: #4e3421; 
+            font-weight: bold; 
+            position: relative;
+            height: auto;
+            min-height: 130px;
+            overflow: hidden;
+        }
+        
+        /* الصف العلوي: العنوان + بورد العدد */
+        .achievement-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            top: -5px;
+        }
+        
+        /* العنوان */
+        .achievement-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4e3421;
+            text-align: left;
+            flex: 1;
+        }
+        
+        /* بورد العدد البني */
+        .achievement-progress-box {
+            background: #4e3421;
+            border-radius: 20px;
+            padding: 4px 10px;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .achievement-progress-text {
+            font-size: 11px;
+            color: #e39a75;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        /* بورد العدد عند اكتمال الإنجاز (ذهبي) */
+        .achievement-progress-box.achievement-completed {
+            background: linear-gradient(135deg, #ffd700, #ffae00);
+            border: 0px solid #b8860b;
+        }
+        
+        .achievement-progress-box.achievement-completed .achievement-progress-text {
+            color: #4e3421;
+            font-weight: bold;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        /* الصف السفلي: الميداليات + الصورة */
+        .achievement-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        /* حاوية الميداليات (يسار) */
+        .medals-container {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            position: relative;
+            top: -3px;
+        }
+        
+        .medal-icon {
+            width: 55px;
+            height: 55px;
+            cursor: pointer;
+        }
+        
+        /* حاوية الصورة الرئيسية (يمين) */
+        .achievement-main-icon {
+            width: 65px;
+            height: 65px;
+            flex-shrink: 0;
+            position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            top: -10px;
+        }
+        
+        .achievement-main-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* الكأس فوق الصورة */
+        .cup-overlay {
+            position: absolute;
+            top: 29px;
+            right: -14px;
+            width: 40px;
+            height: 40px;
+            background: url('https://i.ibb.co/Rkj6ZzmX/Cup.png') center/contain no-repeat;
+            z-index: 5;
+            display: none;
+        }
+        
+        /* الشرح أسفل العنوان */
+        .achievement-description {
+            font-size: 10px;
+            color: #4e3421;
+            text-align: left;
+            margin-top: -10px;
+            opacity: 1;
+        }
+        
+        /* تلميح الميدالية */
+        .medal-tooltip {
+            position: absolute;
+            background: #4e3421;
+            color: #e39a75;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        /* توسيع المكافأة على الكرت */
+        .reward-expansion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            border-radius: 9px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: expandOnCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            overflow: hidden;
+        }
+        
+        @keyframes expandOnCard {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+                border-radius: 50%;
+            }
+            50% {
+                transform: scale(1.02);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                border-radius: 9px;
+            }
+        }
+        
+        .reward-expansion.collecting {
+            animation: shrinkFromCard 0.3s ease-out forwards;
+        }
+        
+        @keyframes shrinkFromCard {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+        
+        .reward-expansion-gif {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://i.ibb.co/JwZs6bbC/12.gif') center/cover no-repeat;
+            opacity: 1;
+            z-index: 1;
+        }
+        
+        .reward-expansion-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: px;
+            background: transparent;
+            border-radius: 9px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            
+        }
+        
+        .reward-expansion-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .reward-expansion-medal {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .reward-expansion-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: #4e3421;
+            text-align: center;
+        }
+        
+        .reward-expansion-divider {
+            display:none;
+        }
+        
+        .reward-expansion-diamonds {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .reward-expansion-diamonds img {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .reward-expansion-diamonds span {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-shadow: 1px 1px 0 #4e3421;
+        }
+        
+        .reward-collect-btn-small {
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #1e7e34;
+            margin-top: 5px;
+            transition: transform 0.1s;
+        }
+        
+        .reward-collect-btn-small:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #1e7e34;
+        }
+
+        @keyframes fadeInOut { 0% { opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes floatUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-20px); opacity: 0; } }
+
+        /* الحظيرة */
+        .barn-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.4s ease; }
+        .barn-modal-overlay.active { opacity: 1; visibility: visible; }
+        .barn-modal { background: #efebe9; width: 95%; max-width: 380px; border-radius: 30px; padding: 20px; border: 8px solid #4e3421; text-align: center; position: relative; box-shadow: 0 10px 0 #3e2716; transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .barn-modal-overlay.active .barn-modal { transform: translateY(0); }
+        .barn-title { font-size: 24px; font-weight: bold; color: #4e3421; margin-bottom: 15px; margin-top: 5px; text-shadow: 1px 1px #fff; }
+        .barn-tabs { display: flex; justify-content: space-around; margin-bottom: 20px; background: #d7ccc8; border-radius: 15px; padding: 5px; border: 2px solid #4e3421; }
+        .tab-btn { padding: 8px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-weight: bold; color: #4e3421; flex: 1; transition: 0.2s; }
+        .tab-btn.active { background: #4e3421; color: #fff; }
+        .animal-display { position: relative; background: #fff8e1; border-radius: 20px; padding: 20px; margin-bottom: 20px; height: 250px; display: flex; justify-content: center; align-items: center; border: 4px solid #8d6e63; }
+        #barnAnimalImg { width: 100px; cursor: pointer; transition: transform 0.1s; z-index: 2; }
+        #animalTimer { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: #ff3d00; font-size: 18px; font-weight: bold; text-shadow: 1px 1px #fff; z-index: 10; white-space: nowrap; }
+        .animal-level-badge { position: absolute; top: -12px; right: -12px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 2px solid #4e3421; z-index: 5; }
+        .animal-level-badge.max-level { background: linear-gradient(135deg, #f1c40f, #e67e22); }
+        .energy-container { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 100px; background: #3e2716; border-radius: 10px; overflow: hidden; border: 2px solid #4e3421; }
+        .energy-fill { width: 100%; height: 0%; background: linear-gradient(to top, #ffb300, #ffea00); position: absolute; bottom: 0; transition: height 0.2s; }
+        .barn-footer { display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 10px; }
+        .upgrade-animal-btn { flex: 2; height: 70px; background: #7d5638; border: none; border-radius: 20px; cursor: pointer; color: white; box-shadow: 0 4px 0 #4e3421; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
+        .upgrade-animal-btn:active { transform: translateY(4px); box-shadow: none; }
+        .upgrade-animal-btn.max-level { background: linear-gradient(45deg, #ffd700, #ffae00); color: #3e2716; box-shadow: 0 4px 0 #b8860b; border: 2px solid #fff; cursor: default; }
+        .upgrade-animal-btn.max-level .upgrade-animal-price { display: none; }
+        .upgrade-animal-price { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 5px; color: #ffeb3b; }
+        .upgrade-animal-price img { width: 18px; }
+        .upgrade-animal-text { font-size: 14px; font-weight: bold; }
+        .storage-btn-circle { width: 70px; height: 70px; background: #c49a7c; border: 4px solid #4e3421; border-radius: 50%; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 0 #4e3421; transition: 0.1s; }
+        .storage-btn-circle:active { transform: translateY(4px); box-shadow: none; }
+        .storage-btn-circle img { width: 40px; margin-bottom: 2px; }
+        .storage-btn-circle span { font-size: 10px; font-weight: bold; color: #4e3421; }
+
+        /* نافذة مخزن المنتجات */
+        .product-storage-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .product-storage-overlay.active { opacity: 1; visibility: visible; }
+        .product-storage-card { width: 90%; max-width: 400px; height: auto; background-color: #c49a7c; border: 8px solid #4e3421; border-radius: 25px; position: relative; padding: 20px; display: flex; flex-direction: column; transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .product-storage-overlay.active .product-storage-card { transform: translateY(0); }
+        .product-storage-header { font-size: 24px; font-weight: bold; color: #4e3421; text-align: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #4e3421; }
+        .product-storage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0px; justify-items: center; align-items: center; }
+        .product-storage-item { background: #dcb091; border: 3px solid #4e3421; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: transform 0.1s; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; }
+        .product-storage-item:active { transform: scale(0.95); }
+        .product-storage-item img { width: 55px; height: 55px; object-fit: contain; margin-bottom: 8px; }
+        .product-storage-name { font-size: 14px; font-weight: bold; color: #4e3421; margin-bottom: 5px; }
+        .product-storage-count { font-size: 18px; font-weight: bold; color: #2c3e50; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .product-storage-count::before { content: ""; width: 16px; height: 16px; background-image: url('https://i.ibb.co/JFHydGYv/1774888990017.png'); background-size: contain; background-repeat: no-repeat; display: inline-block; }
+        
+        /* نافذة البيع */
+        .sell-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; 
+            z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        .sell-modal.active { opacity: 1; visibility: visible; }
+        .sell-container { 
+            background: #5d4037; padding: 20px; border-radius: 20px; border: 4px solid #3e2723; 
+            text-align: center; width: 280px; color: white; transform: translateY(100px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .sell-modal.active .sell-container { transform: translateY(0); }
+        
+        .sell-price-wrapper { 
+            background: rgba(0,0,0,0.3); 
+            border-radius: 15px; 
+            padding: 10px; 
+            margin: 10px 0;
+        }
+        .sell-price-label { color: #dcb091; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .sell-price-value-wrapper { display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .sell-price-value { font-weight: bold; font-size: 28px; color: #ffeb3b; }
+        
+        /* نظام + و - و MAX */
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .qty-btn {
+            width: 40px;
+            height: 40px;
+            background: #4e3421;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .qty-btn:active { transform: scale(0.95); }
+        .qty-max-btn {
+            background: #ffd700;
+            color: #4e3421;
+            font-size: 14px;
+        }
+        .qty-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffeb3b;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .sell-confirm-btn { 
+            width: 100%; padding: 12px; background: #4CAF50; border: none; border-radius: 12px; 
+            cursor: pointer; color: white; box-shadow: 0 4px #2e7d32; 
+        }
+        .sell-confirm-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        /* أزرار معلومات المحصول */
+        .buttons-row { display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 15px; }
+        .use-btn { flex: 1; padding: 12px 0; background-color: #7d5638; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 0 #4e3421; text-align: center; }
+        .use-btn.selected { background-color: #28a745; box-shadow: 0 4px 0 #1e7e34; transform: translateY(2px); }
+        .use-btn:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
+        .upgrade-btn-in-card { flex: 1; padding: 8px 0; background-color: #7d5638; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 0 #4e3421; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .upgrade-btn-in-card.max-level { background: linear-gradient(45deg, #ffd700, #ffae00); color: #3e2716; box-shadow: 0 4px 0 #b8860b; border: 2px solid #fff; cursor: default; }
+        .upgrade-btn-in-card.max-level .upgrade-price-small { display: none; }
+        .upgrade-price-small { font-size: 14px; display: flex; align-items: center; gap: 3px; color: #ffeb3b; }
+        .upgrade-price-small img { width: 16px; height: 16px; }
+        .upgrade-text-small { font-size: 12px; }
+        .crop-level-badge { background: linear-gradient(135deg, #2ecc71, #27ae60); border: 2px solid #4e3421; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; margin-bottom: 10px; }
+        .crop-level-badge.max-level { background: linear-gradient(135deg, #ffd700, #ffae00); }
+        
+        /* تأثير الضغط على الحيوان */
+        .tap-effect { position: fixed; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 5px; z-index: 9999; animation: popUpFade 0.6s ease-out forwards; background: transparent; }
+        .tap-effect img { width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .tap-effect span { font-size: 20px; font-weight: bold; color: #2ecc71; text-shadow: 1px 1px 2px #000; }
+        @keyframes popUpFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -80px) scale(1); opacity: 0; } }
+        
+        /* مستوى الترقية */
+        .level-up-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 9999; overflow: hidden; }
+        .level-up-mask::before { content: ""; position: absolute; width: 300vmax; height: 300vmax; background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.1) 0deg 15deg, transparent 15deg 30deg); animation: rotateSun 20s linear infinite; z-index: -1; }
+        @keyframes rotateSun { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .level-up-card { text-align: center; color: white; font-family: 'Arial', sans-serif; animation: levelUpPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes levelUpPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .level-up-card h1 { color: #f1c40f; font-size: 32px; margin-bottom: 30px; }
+        .unlocked-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; }
+        .unlock-item { position: relative; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; border: 2px solid #f1c40f; width: 100px; text-align: center; }
+        .unlock-item img { width: 60px; height: 60px; object-fit: contain; }
+        .level-up-btn { background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 20px; cursor: pointer; font-size: 18px; }
+        
+        /* التاجر */
+        .trader-wrapper { position: absolute; bottom: 80px; left: 20px; display: flex; align-items: center; z-index: 100; }
+        .trader-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.4s ease; }
+        .trader-overlay.active { opacity: 1; visibility: visible; }
+        .trader-card { width: 90%; max-width: 500px; height: auto; max-height: 80%; background-color: #c49a7c; border: 8px solid #4e3421; border-radius: 35px; position: relative; display: flex; flex-direction: column; padding: 20px; transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .trader-overlay.active .trader-card { transform: translateY(0); }
+        .trader-header { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 15px; }
+        .trader-title { font-size: 24px; font-weight: bold; color: #4e3421; text-align: center; }
+        .trader-divider { height: 3px; background-color: #4e3421; margin: 5px 0 15px 0; }
+        .trader-grid { overflow-x: auto; overflow-y: hidden; white-space: nowrap; padding: 10px 5px; display: flex; flex-direction: row; gap: 12px; scrollbar-width: thin; flex: 1; }
+        .trader-grid::-webkit-scrollbar { height: 6px; }
+        .trader-grid::-webkit-scrollbar-track { background: #3e2716; border-radius: 3px; }
+        .trader-grid::-webkit-scrollbar-thumb { background: #c49a7c; border-radius: 3px; }
+        .trader-item { background: #dcb091; border: 3px solid #4e3421; border-radius: 12px; padding: 12px; display: inline-flex; flex-direction: column; align-items: center; transition: transform 0.1s; min-width: 100px; text-align: center; position: relative; cursor: pointer; }
+        .trader-item:active { transform: scale(0.95); }
+        .trader-item-img { width: 55px; height: 55px; object-fit: contain; margin-bottom: 8px; }
+        .trader-item-name { font-size: 14px; font-weight: bold; color: #4e3421; margin-bottom: 5px; }
+        .trader-item-price { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .trader-item-price img { width: 16px; height: 16px; }
+        .sell-btn-on-card { background: #4e3421; border: 2px solid #c49a7c; border-radius: 20px; padding: 6px 12px; margin-top: 5px; display: inline-block; text-align: center; cursor: pointer; transition: transform 0.1s; font-size: 12px; font-weight: bold; color: #ffeb3b; width: 100%; }
+        .sell-btn-on-card:active { transform: scale(0.95); }
+        
+        /* نافذة بيع التاجر */
+        .trader-sell-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; 
+            z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        .trader-sell-modal.active { opacity: 1; visibility: visible; }
+        .trader-sell-container { 
+            background: #5d4037; padding: 20px; border-radius: 20px; border: 4px solid #3e2723; 
+            text-align: center; width: 280px; color: white; transform: translateY(100px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .trader-sell-modal.active .trader-sell-container { transform: translateY(0); }
+        
+        /* مخزن المحاصيل */
+        .crop-storage-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .crop-storage-overlay.active { opacity: 1; visibility: visible; }
+        .crop-storage-card { width: 90%; max-width: 400px; height: 80%; background-color: #c49a7c; border: 8px solid #4e3421; border-radius: 25px; position: relative; padding: 20px; display: flex; flex-direction: column; transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .crop-storage-overlay.active .crop-storage-card { transform: scale(1); }
+        .crop-storage-header { font-size: 24px; font-weight: bold; color: #4e3421; text-align: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #4e3421; }
+        .crop-storage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; overflow-y: auto; padding: 12px; flex: 1; }
+        .crop-storage-item { background: #dcb091; border: 3px solid #4e3421; border-radius: 12px; padding: 12px 8px; text-align: center; cursor: pointer; transition: transform 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .crop-storage-item:active { transform: scale(0.95); }
+        .crop-storage-item img { width: 55px; height: 55px; object-fit: contain; margin-bottom: 8px; }
+        .crop-storage-name { font-size: 13px; font-weight: bold; color: #4e3421; margin-bottom: 5px; text-align: center; }
+        .crop-storage-count { font-size: 16px; font-weight: bold; color: #2c3e50; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .crop-storage-count::before { content: ""; width: 16px; height: 16px; background-image: url('https://i.ibb.co/JFHydGYv/1774888990017.png'); background-size: contain; background-repeat: no-repeat; display: inline-block; }
+
+        /* بطاقة المحصول المتنامي مع القدرات */
+        .growing-info-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.4s ease; }
+        .growing-info-overlay.active { opacity: 1; visibility: visible; }
+        .growing-info-card { width: 380px; background-color: #c49a7c; border: 8px solid #4e3421; border-radius: 35px; position: relative; display: flex; flex-direction: column; align-items: center; padding: 20px; transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .growing-info-overlay.active .growing-info-card { transform: translateY(0); }
+        .growing-info-img-container { width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+        .growing-info-img-container img { width: 80px; height: 80px; object-fit: contain; }
+        .growing-info-title { font-size: 20px; font-weight: bold; color: #4e3421; text-align: center; margin-bottom: 10px; }
+        .growing-timer-container { width: 100%; text-align: center; margin-bottom: 20px; }
+        .growing-time-label { font-size: 14px; color: #4e3421; font-weight: bold; margin-bottom: 8px; }
+        .growing-time-text { color: #2c3e50; font-weight: bold; margin-bottom: 12px; font-size: 20px; direction: ltr; }
+        .growing-progress-bar { width: 100%; height: 12px; background-color: #3e2716; border-radius: 6px; overflow: hidden; border: 1px solid #4e3421; }
+        .growing-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #2ecc71, #27ae60); transition: width 0.3s; }
+        
+        /* عنوان القدرات */
+        .abilities-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4e3421;
+            text-align: center;
+            margin: 10px 0 15px 0;
+            padding-top: 10px;
+            border-top: 2px solid #4e3421;
+        }
+        
+        /* أزرار القدرات */
+        .abilities-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .ability-trigger {
+            width: 80px;
+            height: 80px;
+            background-color: #7d5638;
+            border: 4px solid #4e3421;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 6px 0 #4e3421, 0 8px 15px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
+            position: relative;
+            padding: 5px;
+        }
+        
+        .ability-trigger:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #4e3421, 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .ability-trigger img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            margin-bottom: 2px;
+        }
+        
+        .ability-label {
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        
+        .ability-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        /* نافذة تعريف القدرة */
+        .ability-info-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .ability-info-overlay.show { display: flex; }
+        .ability-info-card { width: 280px; background-color: #c49a7c; border: 4px solid #7d5638; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: popIn 0.3s ease forwards; }
+        .ability-info-image-container { width: 90px; height: 90px; background-color: rgba(255, 255, 255, 0.3); border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; }
+        .ability-info-image-container img { width: 80%; height: 80%; object-fit: contain; }
+        .ability-info-name { font-size: 20px; font-weight: bold; color: #4e3421; margin-bottom: 8px; }
+        .ability-info-description { font-size: 13px; color: #4e3421; text-align: center; margin-bottom: 18px; line-height: 1.4; }
+        .ability-info-btn { width: 100%; padding: 10px 0; background-color: #7d5638; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #4e3421; transition: all 0.1s ease; }
+        .ability-info-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #4e3421; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.5) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        /* شارة جديدة حمراء */
+        .unlock-item .new-badge { position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 20px; border: 2px solid #ffeb3b; box-shadow: 0 2px 5px rgba(0,0,0,0.3); animation: badgePulse 0.8s ease-in-out infinite; white-space: nowrap; }
+        @keyframes badgePulse { 0%, 100% { transform: scale(1); background: #e74c3c; } 50% { transform: scale(1.1); background: #c0392b; } }
+   
+        .trader-item-stock {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 40px;
+            height: 24px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            border: 2px solid #ffeb3b;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* مهام الفلاح */
+        #farmerTasksOverlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; 
+            justify-content: center; align-items: center; z-index: 500; opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        #farmerTasksOverlay.active { opacity: 1; visibility: visible; }
+        .tasks-panel { 
+            position: relative; width: 90%; max-width: 400px; min-height: 220px; background-color: #c49a7c; 
+            border: 6px solid #4e3421; border-radius: 30px; margin-bottom: 0; display: flex; 
+            align-items: center; justify-content: flex-start; box-sizing: border-box; z-index: 2; 
+            font-weight: bold; color: #4e3421; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding-left: 130px; padding-right: 20px; padding-top: 20px; padding-bottom: 20px;
+            transform: translateY(300px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #farmerTasksOverlay.active .tasks-panel { transform: translateY(0); }
+        .tasks-panel .farmer-img { position: absolute; left: 10px; bottom: 10px; width: 120px; z-index: 3; }
+        .speech-bubble {
+            position: absolute; left: -4px; top: -100px; background: white; border-radius: 20px;
+            padding: 8px 12px; font-size: 12px; font-weight: bold; color: #4e3421; z-index: 4;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); width: 150px; text-align: center;
+            white-space: normal; word-wrap: break-word; line-height: 1.5;
+        }
+        .speech-bubble::before {
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            border-width: 8px 8px 0 8px; border-style: solid; border-color: white transparent transparent transparent;
+        }
+        .progress-badge-farmer {
+            position: absolute; left: 140px; top: 10px; background: #4e3421; color: #e39a75;
+            padding: 6px 8px; border-radius: 15px; font-size: 12px; font-weight: bold; white-space: nowrap; z-index: 5;
+        }
+        .right-content { text-align: right; width: 100%; padding-right: 10px; }      
+        .top-right-badges { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; align-items: center; }
+        .badge { background: #4e3421; color: #e39a75; padding: 3px 8px; border-radius: 15px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        .task-desc { font-size: 14px; margin-bottom: 10px; font-weight: bold; text-align: right; margin-top: 0px; }
+        .rewards-wrapper { position: relative; display: inline-block; width: 100%; text-align: center; }
+        .rewards-flex { display: flex; gap: 8px; justify-content: center; }
+        .reward-box { background: #4e3421; border-radius: 12px; padding: 4px; width: 65px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); position: relative; }
+        .reward-box-inner { background: white; border-radius: 8px; padding: 3px; }
+        .reward-img { width: 30px; height: 30px; display: block; margin: 0 auto; }
+        .reward-amount { font-size: 10px; font-weight: bold; color: #4e3421; margin-top: 2px; text-align: center; }
+        .collect-btn-overlay {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+        .collect-btn-overlay:hover {
+            transform: translateX(-50%) scale(1.1);
+            background: linear-gradient(135deg, #1b5e20, #0d4710);
+            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.6);
+        }
+        .collect-btn-overlay:active {
+            transform: translateX(-50%) scale(0.95);
+            transition: transform 0.1s;
+        }
+        .hidden { display: none; }
+        
+        .task-reward-notification {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(78, 52, 33, 1); border: 3px solid #c49a7c; border-radius: 25px;
+            padding: 20px 30px; z-index: 2000; text-align: center; animation: taskRewardPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 280px;
+        }
+        .task-reward-notification.fade-out { animation: taskRewardFadeOut 0.5s forwards; }
+        .task-new-notification {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(78, 52, 33, 1); border: 3px solid #c49a7c; border-radius: 25px;
+            padding: 20px 30px; z-index: 2000; text-align: center; animation: taskRewardPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 250px;
+        }
+        .task-new-notification.fade-out { animation: taskRewardFadeOut 0.5s forwards; }
+        .task-complete-title { font-size: 20px; font-weight: bold; color: #ffeb3b; margin-bottom: 15px; text-shadow: 1px 1px 2px #000; }
+        .task-new-title { font-size: 20px; font-weight: bold; color: #ffeb3b; margin-bottom: 10px; text-shadow: 1px 1px 2px #000; }
+        .task-new-desc { font-size: 14px; color: white; font-weight: bold; }
+        .rewards-float-container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .reward-float-item { display: flex; flex-direction: column; align-items: center; gap: 5px; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 15px; min-width: 60px; }
+        .reward-float-img { width: 40px; height: 40px; object-fit: contain; }
+        .reward-float-amount { font-size: 16px; font-weight: bold; color: #ffeb3b; }
+        
+        @keyframes taskRewardPop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            70% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes taskRewardFadeOut {
+            from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* نظام الأحداث اليومية */
+        .events-wrapper {
+            position: absolute; bottom: 2px; right: 20px; z-index: 100;
+        }
+        .events-btn {
+            width: 75px; height: 75px; background-color: #c49a7c; border: 4px solid #4e3421;
+            border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.1s;
+            position: relative;
+        }
+        .events-btn:active { transform: scale(0.95); }
+        .events-btn img { width: 70%; }
+        
+        /* طبقة الإشعار الذهبية */
+        .event-card-notification {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://i.ibb.co/5XVh4BhP/eb4f93f68e0a4122a512290d2833e84c.gif') center/cover no-repeat;
+            border-radius: 27px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            cursor: pointer;
+            animation: expandImage 0.5s ease-out forwards;
+        }
+
+        @keyframes expandImage {
+            0% { transform: scale(0.3); opacity: 0; border-radius: 50%; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; border-radius: 27px; }
+        }
+
+        .event-card-notification.fade-out {
+            animation: gentleFade 0.1s ease-out forwards;
+        }
+
+        @keyframes gentleFade {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.95); visibility: hidden; }
+        }
+
+        .event-card-notification.hidden {
+            display: none;
+        }
+
+        .notification-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4e3421;
+            text-shadow: 2px 2px 0 #ffffff;
+            letter-spacing: 4px;
+            background: transparent;
+            padding: 15px 25px;
+            animation: textPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .events-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex;
+            justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden;
+            transition: all 0.4s ease;
+        }
+        .events-overlay.active { opacity: 1; visibility: visible; }
+        .events-card {
+            width: 320px; background-color: #c49a7c; border: 8px solid #4e3421; border-radius: 35px;
+            position: relative; padding: 25px 20px; display: flex; flex-direction: column; align-items: center;
+            transform: translateY(100px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+        .events-overlay.active .events-card { transform: translateY(0); }
+        .events-title { font-size: 28px; font-weight: bold; color: #4e3421; text-align: center; margin-bottom: 10px; }
+        .events-divider { width: 80%; height: 3px; background-color: #4e3421; margin-bottom: 15px; }
+
+        /* حاوية المؤقت مع بورد بني */
+        .events-timer-wrapper {
+            background: #4e3421;
+            border-radius: 25px;
+            padding: 0px 0px;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .events-timer-label {
+            font-size: 12px;
+            color: #e39a75;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .events-timer {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffeb3b;
+            background: transparent;
+            text-align: center;
+            direction: ltr;
+            letter-spacing: 2px;
+        }
+
+        /* اسم الحدث (فوق الصورة) */
+        .events-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4e3421;
+            text-align: center;
+            background: linear-gradient(135deg, #ffd700, #ffae00);
+            border: 5px solid #b8860b;
+            padding: 8px 15px;
+            border-radius: 25px;
+            margin-bottom: 15px;
+            width: auto;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* حاوية الصورة */
+        .events-image-container { 
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .events-image { width: 150px; height: 150px; object-fit: contain; animation: eventPulse 1.5s ease-in-out infinite; }
+
+        /* الشرح */
+        .events-description {
+            font-size: 13px;
+            font-weight: bold;
+            color: #4e3421;
+            text-align: center;
+            background: linear-gradient(135deg, #ffd700, #ffae00);
+            border: 2px solid #b8860b;
+            padding: 8px 15px;
+            border-radius: 15px;
+            margin-top: 8px;
+            width: 260px;
+            min-height: 60px;
+            height: auto;
+            overflow-y: auto;
+            word-wrap: break-word;
+            white-space: normal;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            scrollbar-width: thin;
+            scrollbar-color: #c49a7c #4e3421;
+        }
+
+        .events-description::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .events-description::-webkit-scrollbar-track {
+            background: #4e3421;
+            border-radius: 4px;
+        }
+
+        .events-description::-webkit-scrollbar-thumb {
+            background: #c49a7c;
+            border-radius: 4px;
+        }
+        
+        @keyframes eventPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .floating-diamond {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1.5s forwards;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 20px;
+            color: #00bcd4;
+        }
+        .floating-diamond-icon {
+            width: 24px;
+            height: 24px;
+            background-image: url('https://i.ibb.co/KjKrKK3T/1774202167159.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            display: inline-block;
+        }
+        .diamond-exchange-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .diamond-exchange-modal {
+            background: #c49a7c;
+            border: 8px solid #4e3421;
+            border-radius: 35px;
+            padding: 25px;
+            width: 320px;
+            text-align: center;
+            position: relative;
+            transform: translateY(100px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .diamond-exchange-modal button {
+            transition: all 0.1s ease;
+        }
+        .diamond-exchange-modal button:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+        .season-rect-btn {
+        position: absolute;
+        bottom: 90px;
+        left: 32%;
+        width: 200px;
+        height: 65px;
+        background: linear-gradient(145deg, #c49a7c, #a67c5f);
+        border: 3px solid #4e3421;
+        border-radius: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 6px 0 #4e3421;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+        gap: 8px;
+    }
+    
+    .season-rect-btn:active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #4e3421;
+    }
+    
+    .reward-circle {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(145deg, #ffd700, #ffae00);
+        border: 3px solid #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 18px;
+        color: #4e3421;
+        text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        box-shadow: 0 3px 0 #b8860b;
+        flex-shrink: 0;
+    }
+    
+    .reward-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .btn-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn-label {
+        font-size: 10px;
+        font-weight: bold;
+        color: #4e3421;
+        text-shadow: 1px 1px 0 #fff3e0;
+    }
+    
+    .btn-progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #4e3421;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #ffd966;
+    }
+    
+    .btn-progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #f39c12, #ffd700);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .btn-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 8px;
+        font-weight: bold;
+        color: #4e3421;
+    }
+    
+    .season-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: #f7edd4;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.35s ease;
+        z-index: 200;
+    }
+    
+    .season-overlay.active {
+        transform: translateY(0);
+    }
+    
+    .season-header-overlay {
+        height: 60px;
+        background: transparent;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .close-circle {
+        width: 45px;
+        height: 45px;
+        background: #c49a7c;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 22px;
+        font-weight: bold;
+        color: #4e3421;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        margin-top: 20px;
+    }
+    
+    .ticket-container {
+        background-color: #fef49e;
+        border: 4px solid #f0da5e;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 20px;
+        padding: 5px 10px 5px 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        position: relative;
+        min-width: 150px;
+        height: 60px;
+        margin-top: 20px;
+    }
+    
+    .ticket-number {
+        font-family: 'Arial', sans-serif;
+        font-size: 40px;
+        font-weight: bold;
+        color: #8b7d3a;
+        flex-grow: 1;
+        text-align: center;
+        margin-left: -20px;
+    }
+    
+    .ticket-icon {
+        height: 100%;
+        position: absolute;
+        right: -10px;
+        
+    }
+    
+    .season-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .season-header-content {
+        background: #faf3e0;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 3px solid #e2c7a3;
+        border-radius: 20px;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+    }
+    
+    .brand-section {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .season-hunt-text {
+        font-size: 13px;
+        font-weight: 800;
+        color: #c97e00;
+        letter-spacing: 1px;
+    }
+    
+    .city-name {
+        font-size: 38px;
+        font-weight: 900;
+        font-family: 'Arial Black', sans-serif;
+        color: #3e2a1f;
+        text-shadow: 2px 2px 0 #fff3e0;
+        line-height: 1;
+    }
+    
+    .timer-side {
+        background: #f39c12;
+        border-radius: 60px;
+        padding: 6px 20px;
+        text-align: center;
+        box-shadow: 0 4px 0 #b45f06;
+        min-width: 140px;
+        flex-shrink: 0;
+    }
+    
+    .timer-side .timer-label {
+        font-size: 9px;
+        font-weight: bold;
+        color: #2c1a0e;
+    }
+    
+    .timer-side #countdown {
+        font-size: 18px;
+        font-weight: 800;
+        font-family: monospace;
+        color: white;
+        text-shadow: 0 1px 0 #6e2c00;
+    }
+    
+    .gray-separator-band {
+        background: #5a6c7e;
+        padding: 12px 25px;
+        border: 3px solid #4a3522;
+        outline: 4px solid rgba(78, 52, 33, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        border-radius: 15px;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+    }
+    
+    .progress-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        overflow: hidden;
+    }
+    
+    .progress-bar-container {
+        flex: 1;
+        background: #2e241d;
+        border-radius: 30px;
+        height: 46px;
+        overflow: hidden;
+        position: relative;
+        border: 2px solid #ffd966;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        min-width: 100px;
+    }
+    
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #f39c12, #ffd700);
+        border-radius: 30px;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: 900;
+        font-size: 14px;
+        color: white;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        white-space: nowrap;
+        font-family: monospace;
+        letter-spacing: 1px;
+    }
+    
+    .xp-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        gap: 4px;
+    }
+    
+    .xp-icon {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .xp-icon img {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .xp-text {
+        font-size: 10px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        white-space: nowrap;
+        text-align: center;
+    }
+    
+    .tickets-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 0 20px;
+        gap: 20px;
+    }
+    
+    .ticket-header-silver {
+        flex: 1;
+        background: linear-gradient(145deg, #c0c0c0, #a0a0a0);
+        border: 3px solid #ffffff;
+        border-radius: 15px;
+        padding: 8px 12px;
+        text-align: center;
+        box-shadow: 0 4px 0 #707070;
+    }
+    
+    .ticket-header-gold {
+        flex: 1;
+        background: linear-gradient(145deg, #ffd700, #daa520);
+        border: 3px solid #ffffff;
+        border-radius: 15px;
+        padding: 8px 12px;
+        text-align: center;
+        box-shadow: 0 4px 0 #b8860b;
+    }
+    
+    .ticket-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #4e3421;
+        text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        margin-bottom: 5px;
+    }
+    
+    .ticket-sub-silver {
+        background: #4e3421;
+        color: #c0c0c0;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    
+    .ticket-sub-gold {
+        background: #4e3421;
+        color: #ffd700;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-block;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+    }
+    
+    .ticket-sub-gold:active {
+        transform: scale(0.95);
+    }
+    
+    .levels-container {
+        position: relative;
+        width: 100%;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 200px;
+        border: 4px solid #4e3421;      
+        border-radius: 25px; 
+        padding:1px;       
+    }
+    
+    .level-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        justify-items: center;
+        min-height: 130px;
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        gap: 10px;
+        padding: 10px 20px;
+    }
+    
+    .left-col {
+        justify-self: start;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+    }
+    
+    .center-col {
+        justify-self: center;
+    }
+    
+    .right-col {
+        justify-self: end;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .card-back {
+        position: absolute;
+        inset: 5px 12px;
+        border-radius: 24px;
+        background: linear-gradient(120deg, #cbd5e1, #f7d44a);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .tier-circle {
+        width: 58px;
+        height: 58px;
+        background: linear-gradient(145deg, #ffd700, #ffae00);
+        border: 3px solid #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 26px;
+        color: #4e3421;
+        position: relative;
+        z-index: 25;
+    }
+    
+    .tier-circle img {
+        width: 70%;
+        height: 70%;
+        object-fit: contain;
+    }
+    
+    .reward-silver {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(145deg, #e0e4ec, #b7bfca);
+        border-radius: 20px;
+        border: 3px solid gray;
+        outline: 4px solid rgba(00, 00, 00, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 20;
+        cursor: pointer;
+        transition: transform 0.05s linear;
+    }
+
+    .reward-gold {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(145deg, #ffe594, #e6b422);
+        border-radius: 20px;
+        border: 3px solid #B47C2F;
+        outline: 4px solid rgba(00, 00, 00, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 20;
+        cursor: pointer;
+        transition: transform 0.05s linear;
+    }
+    
+    .reward-silver:active, .reward-gold:active {
+        transform: scale(0.92);
+    }
+    
+    .reward-img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        margin-bottom: 4px;
+        pointer-events: none;
+    }
+    
+    .reward-value {
+        font-weight: 900;
+        font-size: 18px;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        pointer-events: none;
+    }
+    
+    .lock-corner {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        width: 32px;
+        height: 32px;
+        background-image: url('https://i.ibb.co/39VjJxwx/lock-icon-29059.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: block;
+        z-index: 30;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .check-corner {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        width: 32px;
+        height: 32px;
+        background-image: url('https://i.ibb.co/XrFjFgdN/Correct.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: none;
+        z-index: 30;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .reward-silver.collected .lock-corner,
+    .reward-gold.collected .lock-corner {
+        display: none;
+    }
+    
+    .reward-silver.collected .check-corner,
+    .reward-gold.collected .check-corner {
+        display: block;
+    }
+    
+    .reward-silver.ready .lock-corner,
+    .reward-gold.ready .lock-corner {
+        display: none;
+    }
+    
+    .reward-silver.ready,
+    .reward-gold.ready {
+        animation: pulse 0.8s ease-in-out infinite;
+        cursor: pointer;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    .final-box-row {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 140px;
+        padding: 20px;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .final-box {
+        width: 140px;
+        height: 140px;
+        background: linear-gradient(145deg, #ffe594, #e6b422);
+        border-radius: 20px;
+        border: 3px solid #B47C2F;
+        outline: 4px solid rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 20;
+        cursor: pointer;
+        transition: transform 0.05s linear;
+        flex-shrink: 0;
+    }
+    
+    .final-box:active {
+        transform: scale(0.92);
+    }
+    
+    .final-box img {
+        width: 90px;
+        height: 90px;
+        object-fit: contain;
+        margin-bottom: 6px;
+    }
+    
+    .box-counter {
+        background: #4e3421;
+        border-radius: 25px;
+        padding: 6px 12px;
+        margin-top: 5px;
+        text-align: center;
+    }
+    
+    .box-counter span {
+        font-size: 12px;
+        color: #ffd700;
+        font-weight: bold;
+        text-shadow: none;
+        background: transparent;
+        padding: 0;
+    }
+    
+    .final-box-text-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        background: rgba(78, 52, 33, 0.15);
+        padding: 15px 20px;
+        border-radius: 20px;
+        border-right: 4px solid #ffd700;
+        max-width: 250px;
+        min-width: 200px;
+        flex-shrink: 0;
+        pointer-events: none;
+        z-index: 200;
+    }
+    
+    .final-box-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #4e3421;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 200;
+    }
+    
+    .final-box-desc {
+        font-size: 12px;
+        color: #4e3421;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+    
+    .final-box-note {
+        font-size: 11px;
+        color: #8b5a2b;
+        font-weight: bold;
+        background: rgba(255, 215, 0, 0.2);
+        padding: 4px 10px;
+        border-radius: 15px;
+        display: inline-block;
+    }
+    
+    .vertical-brown-line {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 5px;
+        background-color: #6b4c3a;
+        transform: translateX(-50%);
+        z-index: 15;
+        box-shadow: 0 0 0 1px #dbbc8c;
+        pointer-events: none;
+        transition: height 0.1s ease;
+    }
+    
+    .purchase-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .purchase-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .purchase-card {
+        background: #c49a7c;
+        border: 8px solid #4e3421;
+        border-radius: 35px;
+        padding: 25px;
+        width: 300px;
+        text-align: center;
+        transform: translateY(100px);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .purchase-overlay.active .purchase-card {
+        transform: translateY(0);
+    }
+    
+    .purchase-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4e3421;
+        margin-bottom: 15px;
+    }
+    
+    .purchase-price {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: #4e3421;
+        padding: 10px;
+        border-radius: 15px;
+    }
+    
+    .purchase-price span {
+        font-size: 28px;
+        font-weight: bold;
+        color: #ffd700;
+    }
+    
+    .purchase-price img {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .purchase-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+    
+    .purchase-confirm {
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 25px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #1e7e34;
+        transition: transform 0.1s;
+    }
+    
+    .purchase-cancel {
+        background: #8b5a2b;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 25px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #5c3a1a;
+        transition: transform 0.1s;
+    }
+    
+    .purchase-confirm:active, .purchase-cancel:active {
+        transform: translateY(2px);
+        box-shadow: 0 1px 0;
+    }
+    
+    @media (max-width: 550px) {
+        .xp-text { font-size: 9px; }
+        .progress-text { font-size: 11px; }
+        .progress-bar-container { min-width: 80px; height: 40px; }
+        .season-rect-btn { width: 160px; height: 60px; padding: 0 8px; }
+        .reward-circle { width: 45px; height: 45px; font-size: 16px; }
+        .btn-label { font-size: 9px; }
+        .gray-separator-band { padding: 10px 15px; gap: 8px; }
+        .xp-icon { width: 32px; height: 32px; }
+        .xp-icon img { width: 26px; height: 26px; }
+        
+        .ticket-container { min-width: 120px; height: 65px; padding: 3px 8px 3px 20px; }
+        .ticket-number { font-size: 30px; }
+        .ticket-icon { height: 100%; right: -10px; }
+        
+        .final-box-text-container {
+            padding: 8px 12px !important;
+            min-width: 160px !important;
+        }
+        .final-box-title {
+            font-size: 18px !important;
+        }
+        .final-box-desc {
+            font-size: 10px !important;
+        }
+        .final-box-note {
+            font-size: 9px !important;
+        }
+        .final-box-row {
+            gap: 15px !important;
+            flex-wrap: nowrap !important;
+        }
+        .final-box {
+            width: 140px !important;
+            height: 140px !important;
+        }
+        .final-box img {
+            width: 90px !important;
+            height: 90px !important;
+        }
+        .box-counter span {
+            font-size: 10px !important;
+        }
+    }
+    
+    @media (max-width: 450px) {
+        .xp-text { font-size: 9px; }
+        .gray-separator-band { gap: 6px; }
+        .progress-text { font-size: 10px; }
+        .season-rect-btn { width: 140px; height: 55px; }
+        .reward-circle { width: 40px; height: 40px; font-size: 14px; }
+        .ticket-header { font-size: 12px; padding: 4px 8px; }
+        .ticket-sub { font-size: 9px; padding: 3px 8px; }
+        .xp-icon { width: 32px; height: 32px; }
+        .xp-icon img { width: 35px; height: 35px; }
+        
+        .ticket-container { min-width: 100px; height: 55px; padding: 2px 5px 2px 15px; }
+        .ticket-number { font-size: 24px; }
+        .ticket-icon { height: 90%; right: -10px; }
+        
+        .final-box-text-container {
+            padding: 6px 8px !important;
+            min-width: 130px !important;
+        }
+        .final-box-title {
+            font-size: 18px !important;
+        }
+        .final-box-desc {
+            font-size: 7px !important;
+            margin-bottom: 4px !important;
+            margin-left: 10px;
+        }
+        .final-box-note {
+            font-size: 8px !important;
+            padding: 2px 6px !important;
+        }
+        .final-box-row {
+            gap: 10px !important;
+        }
+        .final-box {
+            width: 120px !important;
+            height: 120px !important;
+        }
+        .final-box img {
+            width: 90px !important;
+            height: 90px !important;
+        }
+        .box-counter span {
+            font-size: 9px !important;
+        }
+    }
+    </style>
+</head>      
+<body onclick="closeExternal(event)">      
+    <div class="game-container">      
+        <div class="barns-container"><div class="barn" onclick="openBarn()"></div></div>      
+        <div id="farmer" class="farmer"></div>      
+        <div class="profile-container" onclick="toggleInfo(event)">      
+            <div class="profile-circle"><img src="https://i.ibb.co/N227fxCb/Profile.png"></div>      
+            <div class="level-oval">      
+                <span class="level-txt" id="lvlDisplay">Lv.1</span>      
+                <div class="exp-bar-bg"><div class="exp-bar-fill" id="expFill"></div></div>      
+            </div>      
+        </div>      
+        <div class="money-bar-container"><div class="money-icon-only"></div><div id="moneyDisplay">1000</div></div> 
+        <div class="diamond-bar-container"><div class="diamond-icon-only"></div><div id="diamondDisplay">5000</div></div>    
+        <div class="info-panel" id="infoPanel" onclick="event.stopPropagation()">      
+            <div class="name-box"><span>الاسم:</span> <span>أحمد</span></div>      
+            <div class="brown-line"></div>      
+            <div class="stats-grid">      
+                <div class="stat-square"><span>المحصول المفضل</span><span id="statFav">---</span></div>      
+                <div class="stat-square"><span>إجمالي الأرباح</span><span id="statTotalProfit">0</span></div>      
+                <div class="stat-square"><span>الحقول المحروثة</span><span id="statTilled">0</span></div>      
+                <div class="stat-square"><span>المحاصيل المزروعة</span><span id="statPlanted">0</span></div>      
+            </div>      
+        </div>      
+    
+        <div class="farm-grid" id="mainGrid"></div>      
+    
+        <div class="selector-wrapper" id="selector">      
+            <div class="circle-btn" onclick="toggleMenu(event)"><img src="https://i.ibb.co/ksTn9VHv/1769368917723.png" style="width:70%"></div>      
+            <div class="menu-bar"><div class="menu-content" id="cropMenu"></div></div>      
+        </div>      
+    
+        <div id="infoOverlay" onclick="closeInfo()">      
+            <div class="info-card" onclick="event.stopPropagation()">      
+                <div style="width:70px; height:70px; background:rgba(255,255,255,0.2); border-radius:10px; margin-bottom:10px; display:flex; justify-content:center; align-items:center;">      
+                    <img id="infoImg" src="" style="width:80%;">      
+                </div>      
+                <div id="infoName" style="font-weight:bold; color:#4e3421; margin-bottom:5px;"></div>      
+                <div id="infoLevel" class="crop-level-badge" style="margin-bottom:10px;"></div>
+                <div class="detail-row"><span>التكلفة</span><span id="infoCost"></span></div>      
+                <div class="detail-row"><span>الربح</span><span id="infoProfit"></span></div>      
+                <div class="detail-row"><span>XP نقاط</span><span id="infoXP"></span></div> 
+                <div class="detail-row"><span>الوقت</span><span id="infoTime"></span></div>                  
+                <div class="buttons-row">
+                    <button class="use-btn" id="useBtn" onclick="confirmSelection()">استخدام</button>
+                    <button class="upgrade-btn-in-card" id="upgradeInfoBtn" onclick="upgradeFromInfo()">
+                        <div class="upgrade-price-small"><span id="infoUpgradePrice">500</span><img src="https://i.ibb.co/KjKrKK3T/1774202167159.png"></div>
+                        <div class="upgrade-text-small">ترقية</div>
+                    </button>
+                </div>
+            </div>      
+        </div>        
+        <div class="road-area"><div id="car" class="car"></div></div>        
+    
+        <!-- مهام الفلاح -->
+        <div id="farmerTasksOverlay" onclick="closeFarmerTasks()">    
+            <div class="tasks-panel" onclick="event.stopPropagation()">    
+                <img src="https://i.ibb.co/GftLRV0N/1769511897443.png" class="farmer-img" alt="الفلاح">    
+                <div class="speech-bubble" id="speechBubble">ساعدني في أكمال المهام لتربح جوائز قيمة</div>
+                <div class="progress-badge-farmer" id="progressBadgeFarmer">0/5</div>
+                <div class="top-right-badges">
+                    <div class="badge" id="taskNumberBadge">المهمة #1</div>
+                    <div class="badge hidden" id="taskTimer">المهمة التالية بعد: 00:00</div>
+                </div>
+                <div class="right-content" id="taskContent">
+                    <div class="task-desc" id="taskDesc">ازرع 5 حبات طماطم</div>
+                    <div class="rewards-wrapper" id="rewardsWrapper">
+                        <div class="rewards-flex" id="rewardsFlex"></div>
+                        <button class="collect-btn-overlay hidden" id="collectBtn" onclick="collectTaskRewards()">تحصيل</button>
+                    </div>    
+                </div>    
+            </div>    
+        </div>
+
+        <div class="bottom-left-nav"><div class="wood-btn" onclick="openAchievements()"><img src="https://i.ibb.co/Rkj6ZzmX/Cup.png" alt="Cup"></div></div>
+
+        <div class="full-overlay" id="achievementsOverlay">
+            <div class="wood-header"><div class="header-title-box">قائمة الإنجازات</div><div class="close-circle" onclick="closeAchievements()">✕</div></div>
+            <div class="overlay-content" id="achievementsList"></div>
+        </div>
+          
+        <div id="levelUpOverlay" class="level-up-mask">
+            <div class="level-up-card">
+                <h1 id="levelUpTitle">لقد وصلت إلى المستوى 5</h1>
+                <div class="unlocked-container" id="unlockedItems"></div>
+                <button class="level-up-btn" onclick="closeLevelUp()">متابعة العمل</button>
+            </div>
+        </div>
+
+        <!-- الحظيرة -->
+        <div id="barnModal" class="barn-modal-overlay" onclick="closeBarn()">
+            <div class="barn-modal" onclick="event.stopPropagation()">
+                <div class="barn-title">الحظيرة</div>
+                <div class="barn-tabs">
+                    <button class="tab-btn" onclick="switchBarnTab('cow')">بقرة</button>
+                    <button class="tab-btn" onclick="switchBarnTab('sheep')">خروف</button>
+                    <button class="tab-btn active" onclick="switchBarnTab('chicken')">دجاجة</button>
+                </div>
+                <div class="animal-display">
+                    <div id="animalTimer"></div>
+                    <span id="animalLevelBadge" class="animal-level-badge">Lv.0</span>
+                    <div class="energy-container"><div id="energyFill" class="energy-fill"></div></div>
+                    <img id="barnAnimalImg" src="" onclick="tapAnimal(this)">
+                </div>
+                <div class="barn-footer">
+                    <button class="upgrade-animal-btn" id="upgradeAnimalBtn" onclick="executeUpgrade()">
+                        <div class="upgrade-animal-price"><span id="upgradePrice">1000</span> <img src="https://i.ibb.co/N6GXqGpk/Money.png"></div>
+                        <div class="upgrade-animal-text" id="upgradeText">شراء</div>
+                    </button>
+                    <div class="storage-btn-circle" onclick="openProductStorage()">
+                        <img src="https://i.ibb.co/JFHydGYv/1774888990017.png">
+                        <span>المخزن</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- نافذة مخزن المنتجات -->
+        <div id="productStorageModal" class="product-storage-overlay" onclick="closeProductStorage()">
+            <div class="product-storage-card" onclick="event.stopPropagation()">
+                <div class="product-storage-header">مخزن المنتجات</div>
+                <div class="product-storage-grid" id="productStorageGrid"></div>
+            </div>
+        </div>
+
+        <!-- نافذة البيع -->
+        <div id="sellModal" class="sell-modal" onclick="closeSellModalFromOverlay(event)">
+            <div class="sell-container" onclick="event.stopPropagation()">
+                <img id="sellProductImg" src="" style="width: 80px; margin-bottom: 15px; background: rgba(255,255,255,0.5); border-radius: 15px; padding: 10px;">
+                <div id="sellProductName" style="font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;"></div>
+                <div class="sell-price-wrapper">
+                    <div class="sell-price-label">سعر الوحدة</div>
+                    <div class="sell-price-value-wrapper">
+                        <span id="sellUnitPrice" class="sell-price-value">0</span>
+                        <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:20px; vertical-align: middle;">
+                    </div>
+                </div>
+                
+                <div class="qty-controls">
+                    <button class="qty-btn" id="sellDecreaseQty">-</button>
+                    <span id="sellQtyDisplay" class="qty-value">1</span>
+                    <button class="qty-btn" id="sellIncreaseQty">+</button>
+                    <button class="qty-btn qty-max-btn" id="sellMaxQty">MAX</button>
+                </div>
+                
+                <button class="sell-confirm-btn" id="sellConfirmBtn">
+                    <div style="font-size: 20px;">بـيـع</div>
+                    <div id="sellTotalPrice">0 <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px;"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- عناصر لعرض كميات المنتجات (مخفية) -->
+        <span id="eggCount" style="display: none;">0</span>
+        <span id="milkCount" style="display: none;">0</span>
+        <span id="woolCount" style="display: none;">0</span>
+
+        <div id="cropStorageOverlay" class="crop-storage-overlay" onclick="closeCropStorage()">
+            <div class="crop-storage-card" onclick="event.stopPropagation()">
+                <div class="crop-storage-header">مخزن المحاصيل</div>
+                <div class="crop-storage-grid" id="cropStorageGrid"></div>
+            </div>
+        </div>
+
+        <!-- بطاقة المحصول المتنامي مع القدرات -->
+        <div id="growingInfoOverlay" class="growing-info-overlay" onclick="closeGrowingInfo()">
+            <div class="growing-info-card" onclick="event.stopPropagation()">
+                <div class="growing-info-img-container"><img id="growingInfoImg" src="" style="width:80px;"></div>
+                <div class="growing-info-title" id="growingInfoName"></div>
+                <div class="growing-timer-container">
+                    <div class="growing-time-label">:الوقت المتبقي</div>
+                    <div class="growing-time-text" id="growingTimeText"></div>
+                    <div class="growing-progress-bar"><div class="growing-progress-fill" id="growingProgressFill"></div></div>
+                </div>
+                <div class="abilities-title">العناصر السحرية</div>
+                <div class="abilities-container" id="abilitiesContainer"></div>
+            </div>
+        </div>
+
+        <!-- نافذة تعريف القدرة -->
+        <div id="abilityInfoOverlay" class="ability-info-overlay" onclick="closeAbilityInfo()">
+            <div class="ability-info-card" onclick="event.stopPropagation()">
+                <div class="ability-info-image-container"><img id="abilityInfoIcon" src="" alt="القدرة"></div>
+                <div class="ability-info-name" id="abilityInfoName"></div>
+                <div class="ability-info-description" id="abilityInfoDesc"></div>
+                <button class="ability-info-btn" id="abilityInfoUseBtn" onclick="useCurrentAbility()">استخدام</button>
+            </div>
+        </div>
+
+        <!-- التاجر -->
+        <div class="trader-wrapper">
+            <div class="circle-btn" onclick="openTrader()"><img src="https://i.ibb.co/zhG7M842/1773880720141.png" style="width:100%"></div>
+        </div>
+
+        <div id="traderOverlay" class="trader-overlay" onclick="closeTrader()">
+            <div class="trader-card" onclick="event.stopPropagation()">
+                <div class="trader-header"><div class="trader-title">التاجر</div></div>
+                <div class="trader-divider"></div>
+                <div class="trader-grid" id="traderGrid"></div>
+            </div>
+        </div>
+
+        <!-- نافذة بيع التاجر -->
+        <div id="traderSellModal" class="trader-sell-modal" onclick="closeTraderSellModalFromOverlay(event)">
+            <div class="trader-sell-container" onclick="event.stopPropagation()">
+                <img id="traderSellImg" src="" style="width: 80px; margin-bottom: 15px; background: rgba(255,255,255,0.5); border-radius: 15px; padding: 10px;">
+                <div id="traderSellName" style="font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;"></div>
+                <div class="sell-price-wrapper">
+                    <div class="sell-price-label">سعر الوحدة</div>
+                    <div class="sell-price-value-wrapper">
+                        <span id="traderCurrentPrice" class="sell-price-value">0</span>
+                        <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:20px;">
+                    </div>
+                </div>
+                
+                <div class="qty-controls">
+                    <button class="qty-btn" id="traderDecreaseQty">-</button>
+                    <span id="traderSellQtyDisplay" class="qty-value">1</span>
+                    <button class="qty-btn" id="traderIncreaseQty">+</button>
+                    <button class="qty-btn qty-max-btn" id="traderMaxQty">MAX</button>
+                </div>
+                
+                <button class="sell-confirm-btn" id="traderSellConfirmBtn">
+                    <div style="font-size: 20px;">بـيـع</div>
+                    <div id="traderSellTotalPrice">0 <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px;"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- زر الأحداث اليومية -->
+        <div class="events-wrapper">
+            <div class="events-btn" onclick="openEvents()">
+                <img src="https://i.ibb.co/FqVWvWy6/calendrier.png" alt="Events">
+            </div>
+        </div>
+
+        <!-- نافذة الأحداث -->
+        <div id="eventsOverlay" class="events-overlay" onclick="closeEvents()">
+            <div class="events-card" onclick="event.stopPropagation()">
+                <div class="event-card-notification hidden" id="eventCardNotification" onclick="collectEventReward(event)">
+                    <div class="notification-text">جديد</div>
+                </div>
+                
+                <div class="events-title">الأحداث اليومية</div>
+                <div class="events-divider"></div>
+                
+                <div class="events-timer-wrapper">
+                    <div class="events-timer-label">:الحدث التالي بعد</div>
+                    <div class="events-timer" id="eventsTimer">23:59:59</div>
+                </div>
+                
+                <div class="events-name" id="eventName"></div>
+                
+                <div class="events-image-container">
+                    <img id="eventImage" class="events-image" src="" alt="Event">
+                </div>
+                
+                <div class="events-description" id="eventDesc"></div>
+            </div>
+        </div>
+    </div>
+    <div class="season-rect-btn" onclick="openSeason()">
+    <div class="reward-circle" id="seasonRewardCircle">
+        <img src="https://i.ibb.co/S7QZWhhm/1775980917122.png" alt="gift" id="seasonCircleImg">
+    </div>
+    <div class="btn-content">
+        <div class="btn-label" id="seasonNameLabel">موسم الشتاء</div>
+        <div class="btn-progress-bar">
+            <div class="btn-progress-fill" id="btnProgressFill"></div>
+        </div>
+        <div class="btn-stats">
+            <span id="btnXPProgress">0/100 XP</span>
+        </div>
+    </div>
+</div>
+
+<div id="seasonOverlay" class="season-overlay">
+    <div class="season-header-overlay">
+        <div class="ticket-container">
+            <span class="ticket-number" id="goldTicketCount">0</span>
+            <img src="https://i.ibb.co/TDvVfxxb/Teket.png" alt="Ticket" class="ticket-icon">
+        </div>
+        <div class="close-circle" onclick="closeSeason()">✕</div>
+    </div>
+    
+    <div class="season-content">
+        <div class="season-header-content">
+            <div class="brand-section">
+                <span class="season-hunt-text">موسم محاصيل</span>
+                <span class="city-name" id="seasonCityName">الشتاء</span>
+            </div>
+            <div class="timer-side">
+                <div class="timer-label">ينتهي خلال</div>
+                <div id="countdown">8d 0h 0m 0s</div>
+            </div>
+        </div>
+        
+        <div class="gray-separator-band">
+            <div class="progress-section">
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-text" id="progressText">0/100</div>
+                </div>
+                <div class="xp-container">
+                    <div class="xp-icon">
+                        <img src="https://i.ibb.co/8gf9nWHd/XP.png" alt="xp">
+                    </div>
+                    <div class="xp-text">اجمع نقاط الخبرة لفتح الجوائز</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tickets-header">
+            <div class="ticket-header-silver">
+                <div class="ticket-title">التذكرة الفضية</div>
+                <div class="ticket-sub-silver">مجاني</div>
+            </div>
+            <div class="ticket-header-gold">
+                <div class="ticket-title">التذكرة الذهبية</div>
+                <div class="ticket-sub-gold" onclick="openPurchaseModal(event)">شراء</div>
+            </div>
+        </div>
+        
+        <div id="levelsList" class="levels-container"></div>
+    </div>
+</div>
+
+<div id="purchaseOverlay" class="purchase-overlay" onclick="closePurchaseModal(event)">
+    <div class="purchase-card" onclick="event.stopPropagation()">
+        <div class="purchase-title">شراء التذكرة الذهبية</div>
+        <div class="purchase-price">
+            <span>50</span>
+            <img src="https://i.ibb.co/TDvVfxxb/Teket.png" alt="gold ticket" style="width:35px;">
+        </div>
+        <div class="purchase-buttons">
+            <button class="purchase-confirm" onclick="confirmPurchase()">شراء</button>
+            <button class="purchase-cancel" onclick="closePurchaseModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+    <script src="script.js"></script>     
+</body>      
+</html>
+
+
 const allCrops = [
     { id: 0, name: 'قمح', img: 'https://i.ibb.co/HTTNdRkP/wheat.png', cost: 0, profit: 10, time: 3, timeLabel: '3s', xp: 11392 },
     { id: 1, name: 'ذرة', img: 'https://i.ibb.co/67RPHStB/corn.png', cost: 5, profit: 20, time: 30, timeLabel: '30s', xp: 20 },
@@ -59,91 +2360,6 @@ let cropUpgradeLevels = {};
 let growingCurrentTile = null;
 let currentSellingCrop = null;
 let currentInfoCrop = null;
-
-// ==================== نظام الألقاب ====================
-let currentTitle = 'المزارع';
-const baseTitles = ['المزارع', 'الفلاح', 'البستاني', 'الحراث'];
-let unlockedTitles = [...baseTitles];
-
-// فتح لقب جديد من الإنجاز
-function unlockTitle(title, achievementName, rewardAmount = 200) {
-    if (!unlockedTitles.includes(title)) {
-        unlockedTitles.push(title);
-        
-        // إضافة مكافأة 200 ألماس
-        diamonds += rewardAmount;
-        updateUI();
-        
-        // إظهار إشعار الحصول على اللقب
-        showTitleUnlockNotification(title, rewardAmount);
-    }
-}
-
-// إشعار الحصول على اللقب
-function showTitleUnlockNotification(title, rewardAmount) {
-    const notification = document.createElement('div');
-    notification.className = 'task-reward-notification';
-    notification.innerHTML = `
-        <div class="task-complete-title">🎉 لقد أكملت ميدالية المستوى الذهبي! 🎉</div>
-        <div class="rewards-float-container">
-            <div class="reward-float-item">
-                <div class="reward-expansion-header" style="margin-bottom: 5px;">
-                    <span class="reward-expansion-text" style="font-size: 18px;">حصلت على لقب: ${title}</span>
-                </div>
-                <div class="reward-expansion-diamonds">
-                    <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 35px;">
-                    <span style="font-size: 24px;">+${rewardAmount}</span>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.classList.add('fade-out');
-        setTimeout(() => notification.remove(), 500);
-    }, 3500);
-}
-
-// عرض الألقاب في شبكة 2x2
-function renderTitlesGrid() {
-    const grid = document.getElementById('titlesGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    
-    unlockedTitles.forEach(title => {
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'title-option';
-        if (title === currentTitle) {
-            titleDiv.classList.add('selected');
-        }
-        titleDiv.textContent = title;
-        titleDiv.onclick = () => selectTitle(title);
-        grid.appendChild(titleDiv);
-    });
-}
-
-// اختيار لقب جديد
-function selectTitle(title) {
-    currentTitle = title;
-    document.getElementById('currentTitle').textContent = currentTitle;
-    closeTitlesMenu();
-    showNotify(`تم تغيير اللقب إلى "${currentTitle}"`);
-}
-
-// فتح قائمة الألقاب
-function openTitlesMenu(event) {
-    event.stopPropagation();
-    const overlay = document.getElementById('titlesOverlay');
-    renderTitlesGrid();
-    overlay.classList.add('active');
-}
-
-// إغلاق قائمة الألقاب
-function closeTitlesMenu() {
-    const overlay = document.getElementById('titlesOverlay');
-    overlay.classList.remove('active');
-}
 
 // ==================== القدرات ====================
 let abilities = {
@@ -227,30 +2443,6 @@ function getReqXP(l) {
     return 100;  
 }    
 
-let gameStartTime = Date.now();
-
-function getPlayTimeDisplay() {
-    const elapsedSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
-    
-    const years = Math.floor(elapsedSeconds / (365 * 24 * 3600));
-    let remaining = elapsedSeconds % (365 * 24 * 3600);
-    const months = Math.floor(remaining / (30 * 24 * 3600));
-    remaining = remaining % (30 * 24 * 3600);
-    const days = Math.floor(remaining / (24 * 3600));
-    remaining = remaining % (24 * 3600);
-    const hours = Math.floor(remaining / 3600);
-    remaining = remaining % 3600;
-    const minutes = Math.floor(remaining / 60);
-    const seconds = remaining % 60;
-    
-    if (years > 0) return `${years} سنة`;
-    if (months > 0) return `${months} شهر`;
-    if (days > 0) return `${days} يوم`;
-    if (hours > 0) return `${hours} ساعة`;
-    if (minutes > 0) return `${minutes} دقيقة`;
-    return `${seconds} ثانية`;
-}
-
 function updateUI() {    
     document.getElementById('moneyDisplay').textContent = money;    
     document.getElementById('diamondDisplay').textContent = diamonds;
@@ -263,10 +2455,6 @@ function updateUI() {
     let best = "---", max = 0;    
     for(let k in stats.fav) if(stats.fav[k] > max) { max = stats.fav[k]; best = k; }    
     document.getElementById('statFav').textContent = best;    
-    
-    if (document.getElementById('profileModal').classList.contains('active')) {
-        updateProfileModal();
-    }
 }    
 
 function createFloatingText(tile, text, color) {    
@@ -343,8 +2531,12 @@ function getCropProfitWithUpgrade(crop) {
 function getCropXPWithUpgrade(crop) {
     let baseXP = crop.xp;
     
-    if (crop.name === 'فاكهة ذهبية') return 0;
-    if (crop.name === 'فاكهة الطاقة') return 1000;
+    if (crop.name === 'فاكهة ذهبية') {
+        return 0;
+    }
+    if (crop.name === 'فاكهة الطاقة') {
+        return 1000;
+    }
     
     let level = cropUpgradeLevels[crop.name] || 1;
     let multiplier = 1 + ((level - 1) * 0.1);
@@ -546,6 +2738,7 @@ function startCropGrowth(tile, crop) {
     tile.dataset.cropImg = crop.img;
     tile.dataset.state = 'growing';
     
+    // إزالة أي تأثيرات سابقة
     removeGoldenGlow(tile);
     tile.classList.remove('golden-soil');
     tile.classList.remove('energy-soil');
@@ -1145,6 +3338,7 @@ for (let i = 0; i < 20; i++) {
             addTaskHarvest(totalHarvest);
             let diamondEarned = applyDiamondChance();
             
+            // إضافة XP للموسم عند الحصاد
             if (cropName === 'فاكهة الطاقة') {
                 let upgradedXP = getCropXPWithUpgrade(allCrops.find(c => c.name === cropName));
                 let finalUpgradedXP = applyEventToXP(upgradedXP);
@@ -1282,6 +3476,7 @@ function rebuildCropMenu() {
     });
 }
 
+// ==================== قائمة المحاصيل الأولية ====================
 rebuildCropMenu();
 
 function confirmSelection() { selectedCrop = pendingCrop; closeInfo(); document.getElementById('selector').classList.remove('active'); }    
@@ -1344,78 +3539,23 @@ function upgradeFromInfo() {
         }
         
         renderTraderGrid();
-        showNotify(`تم ترقية ${currentInfoCrop.name} إلى ${getLevelText(newLevel, currentInfoCrop.name)}!`);
+        showNotify(`تم ترقية ${currentInfoCrop.name} إلى ${getLevelText(newLevel, currentInfoCrop.name)}! ${currentInfoCrop.name === 'فاكهة الطاقة' ? 'XP' : ''}`);
     } else {
         showNotify(`ليس لديك ألماس كافٍ! تحتاج ${price} ألماس`);
     }
 }
 
-function toggleInfo(e) { 
-    e.stopPropagation(); 
-    openProfileModal();
-}
-
+function toggleInfo(e) { e.stopPropagation(); document.getElementById('infoPanel').classList.toggle('active'); }    
 function toggleMenu(e) { e.stopPropagation(); document.getElementById('selector').classList.toggle('active'); }    
-
 function closeInfo() { 
     const overlay = document.getElementById('infoOverlay');
     overlay.classList.remove('active');
 }    
-
 function closeExternal(e) { 
+    document.getElementById('infoPanel').classList.remove('active'); 
     document.getElementById('selector').classList.remove('active'); 
     closeInfo();
-    closeProfileModal();
 }    
-
-// ==================== نافذة الملف الشخصي ====================
-function openProfileModal() {
-    const overlay = document.getElementById('profileModal');
-    updateProfileModal();
-    overlay.classList.add('active');
-}
-
-function closeProfileModal() {
-    const overlay = document.getElementById('profileModal');
-    overlay.classList.remove('active');
-}
-
-function switchProfileTab(tab) {
-    document.querySelectorAll('.profile-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    if (tab === 'profile') {
-        document.querySelector('.profile-tab-btn:first-child').classList.add('active');
-        document.getElementById('profileTab').classList.add('active');
-        document.getElementById('statsTab').classList.remove('active');
-    } else {
-        document.querySelector('.profile-tab-btn:last-child').classList.add('active');
-        document.getElementById('statsTab').classList.add('active');
-        document.getElementById('profileTab').classList.remove('active');
-    }
-}
-
-function updateProfileModal() {
-    let req = getReqXP(level);
-    document.getElementById('modalExpFill').style.width = (currentXP / req * 100) + "%";
-    document.getElementById('modalLvlDisplay').textContent = "Lv." + level;
-    document.getElementById('modalStatTilled').textContent = stats.tilled;
-    document.getElementById('modalStatTotalProfit').textContent = stats.totalProfit;
-    document.getElementById('modalPlayTime').textContent = getPlayTimeDisplay();
-    document.getElementById('currentTitle').textContent = currentTitle;
-    
-    let best = "---", max = 0;
-    for(let k in stats.fav) if(stats.fav[k] > max) { max = stats.fav[k]; best = k; }
-    document.getElementById('modalStatFav').textContent = best;
-}
-
-// تحديث المدة كل ثانية عند فتح النافذة
-setInterval(() => {
-    if (document.getElementById('profileModal').classList.contains('active')) {
-        document.getElementById('modalPlayTime').textContent = getPlayTimeDisplay();
-    }
-}, 1000);
 
 // ==================== الفلاح ====================
 const farmer = document.getElementById('farmer');    
@@ -1469,7 +3609,7 @@ const MEDAL_GOLD = 'https://i.ibb.co/gMnKRMzy/Gold.png';
 const MEDAL_LOCKED = 'https://i.ibb.co/Fb24c1qG/Locked.png';
 
 const achievements = [
-    { id: 1, title: "خبير القمح", reqs: [1, 2, 3], type: "crop", crop: "قمح", img: 'https://i.ibb.co/HTTNdRkP/wheat.png' },
+    { id: 1, title: "خبير القمح", reqs: [100, 200, 300], type: "crop", crop: "قمح", img: 'https://i.ibb.co/HTTNdRkP/wheat.png' },
     { id: 2, title: "خبير الذرة", reqs: [100, 200, 300], type: "crop", crop: "ذرة", img: 'https://i.ibb.co/67RPHStB/corn.png' },
     { id: 3, title: "خبير الطماطم", reqs: [100, 200, 300], type: "crop", crop: "طماطم", img: 'https://i.ibb.co/WpMcRBFD/tomatoes.png' },
     { id: 4, title: "خبير البطاطا", reqs: [100, 200, 300], type: "crop", crop: "بطاطا", img: 'https://i.ibb.co/wNznZ239/potatoes.png' },
@@ -1586,7 +3726,6 @@ function collectAchievementRewardFromExpansion(expansionElement, achId, level, r
     
     const levelType = expansionElement.dataset.levelType;
     const card = expansionElement.closest('.achievement-card');
-    const achievement = achievements.find(a => a.id === achId);
     
     expansionElement.classList.add('collecting');
     
@@ -1594,56 +3733,12 @@ function collectAchievementRewardFromExpansion(expansionElement, achId, level, r
         diamonds += rewardAmount;
         updateUI();
         
-        // إشعار مناسب للمستوى
-        const levelName = level === 1 ? 'البرونزية' : (level === 2 ? 'الفضية' : 'الذهبية');
-        const notification = document.createElement('div');
-        notification.className = 'task-reward-notification';
-        
-        if (level === 3 && achievement) {
-            // فتح اللقب مرة واحدة فقط
-            if (!achievementRewardsCollected[achId]?.goldCollected) {
-                unlockTitle(achievement.title, achievement.title, 200);
-            }
-            
-            notification.innerHTML = `
-                <div class="task-complete-title">🎉 لقد أكملت ميدالية المستوى الذهبي! 🎉</div>
-                <div class="rewards-float-container">
-                    <div class="reward-float-item">
-                        <div class="reward-expansion-header" style="margin-bottom: 5px;">
-                            <span class="reward-expansion-text" style="font-size: 18px;">حصلت على لقب: ${achievement.title}</span>
-                        </div>
-                        <div class="reward-expansion-diamonds">
-                            <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 35px;">
-                            <span style="font-size: 24px;">+${rewardAmount}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            notification.innerHTML = `
-                <div class="task-complete-title">🎉 لقد أكملت ميدالية المستوى ${levelName}! 🎉</div>
-                <div class="rewards-float-container">
-                    <div class="reward-float-item">
-                        <div class="reward-expansion-diamonds">
-                            <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width: 35px;">
-                            <span style="font-size: 24px;">+${rewardAmount}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.classList.add('fade-out');
-            setTimeout(() => notification.remove(), 500);
-        }, 3000);
-        
         if (!achievementRewardsCollected[achId]) {
             achievementRewardsCollected[achId] = {};
         }
         achievementRewardsCollected[achId][`${levelType}Collected`] = true;
         
+        showNotifyHTML(`حصلت على ${rewardAmount} <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width:16px; vertical-align:middle;"> من الإنجاز`);
         expansionElement.remove();
         card.classList.remove('reward-pending');
     }, 600);
@@ -1707,18 +3802,13 @@ function renderAchievements(){
                 </div>
             </div>
             ${newLevelAchieved ? `
-            <div class="reward-expansion" data-reward="${rewardAmount}" data-level="${newLevelAchieved}" data-ach-id="${a.id}" data-level-type="${newLevelAchieved === 1 ? 'bronze' : (newLevelAchieved === 2 ? 'silver' : 'gold')}" data-ach-title="${a.title}" onclick="collectAchievementRewardFromExpansion(this, ${a.id}, ${newLevelAchieved}, ${rewardAmount})">
+            <div class="reward-expansion" data-reward="${rewardAmount}" data-level="${newLevelAchieved}" data-ach-id="${a.id}" data-level-type="${newLevelAchieved === 1 ? 'bronze' : (newLevelAchieved === 2 ? 'silver' : 'gold')}" onclick="collectAchievementRewardFromExpansion(this, ${a.id}, ${newLevelAchieved}, ${rewardAmount})">
                 <div class="reward-expansion-gif"></div>
                 <div class="reward-expansion-content">
                     <div class="reward-expansion-header">
                         <img src="${medalIcon}" class="reward-expansion-medal">
                         <span class="reward-expansion-text">لقد اكملت ميدالية المستوى ${levelName}</span>
                     </div>
-                    ${newLevelAchieved === 3 ? `
-                    <div class="reward-expansion-title" style="margin: 8px 0;">
-                        <span style="font-size: 18px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">لقب: ${a.title}</span>
-                    </div>
-                    ` : ''}
                     <div class="reward-expansion-body">
                         <div class="reward-expansion-diamonds">
                             <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png">
@@ -2086,7 +4176,7 @@ function confirmSell() {
     const qty = currentSellQty;
     const total = qty * sellPrices[currentSellingAnimal]; 
     money += total;
-    totalSellProfit += total;
+    totalSellProfit += total;  // إضافة أرباح البيع
     inventory[currentSellingAnimal] -= qty;
     totalProductsSold[currentSellingAnimal] += qty;
     closeSellModal();
@@ -2172,7 +4262,7 @@ function confirmTraderSell() {
     if (cropInventory[currentSellingCrop.name] >= qty) {
         cropInventory[currentSellingCrop.name] -= qty;
         money += total;
-        totalSellProfit += total;
+        totalSellProfit += total;  // إضافة أرباح البيع
         updateUI();
         renderCropStorage(); renderTraderGrid();
         showNotifyHTML(`تم بيع ${qty} ${currentSellingCrop.name} للتاجر مقابل ${total} <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;">`);
@@ -2208,8 +4298,6 @@ function renderCropStorage() {
 
 // ==================== نظام التاجر ====================
 let traderPrices = {};
-let totalSellProfit = 0;  
-let totalDiamondsCrafted = 0;  
 
 function initTrader() { updateTraderPrices(); }
 
@@ -2247,6 +4335,7 @@ function renderTraderGrid() {
     if (!grid) return; 
     grid.innerHTML = '';
     
+    // عرض فاكهة ذهبية إذا كانت متاحة
     if (goldenFruitAvailable) {
         const goldenCrop = allCrops.find(c => c.id === 16);
         if (goldenCrop) {
@@ -2270,6 +4359,7 @@ function renderTraderGrid() {
         }
     }
     
+    // عرض باقي المحاصيل (بدون فاكهة الطاقة وفاكهة الذهبية)
     allCrops.forEach(crop => {
         if (crop.name === 'فاكهة الطاقة' || crop.id === 17) return;
         if (crop.name === 'فاكهة ذهبية' || crop.id === 16) return;
@@ -2291,6 +4381,7 @@ function renderTraderGrid() {
         grid.appendChild(item);
     });
     
+    // إضافة مكينة الألماس في البداية
     if (diamondTraderAvailable && currentEvent && currentEvent.effect === 'diamondTrader') {
         const exchangeRate = currentEvent.value;
         const maxExchange = Math.floor(money / exchangeRate);
@@ -2310,6 +4401,7 @@ function renderTraderGrid() {
             <div class="sell-btn-on-card" style="background: #ffd700; color: #2c3e50; border-color: #ffeb3b;" onclick="event.stopPropagation(); openDiamondExchangeModal()">تحويل</div>
         `;
         
+        // إضافة في البداية
         grid.insertBefore(diamondItem, grid.firstChild);
     }
 }
@@ -2419,25 +4511,25 @@ function openDiamondExchangeModal() {
     };
     
     document.getElementById('confirmExchange').onclick = () => {
-        if (currentQty <= maxExchange && currentQty > 0) {
-            const cost = currentQty * exchangeRate;
-            money -= cost;
-            diamonds += currentQty;
-            totalDiamondsCrafted += currentQty;
-            updateUI();
-            
-            showNotifyHTML(`تم تحويل <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;"> ${cost} إلى <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width:16px; vertical-align:middle;"> ${currentQty}`);
-            
-            modal.style.transform = 'translateY(100px)';
-            overlay.style.opacity = '0';
-            overlay.style.visibility = 'hidden';
-            setTimeout(() => overlay.remove(), 400);
-            
-            if (diamondTraderAvailable) {
-                renderTraderGrid();
-            }
+    if (currentQty <= maxExchange && currentQty > 0) {
+        const cost = currentQty * exchangeRate;
+        money -= cost;
+        diamonds += currentQty;
+        totalDiamondsCrafted += currentQty;  // إضافة هذا السطر
+        updateUI();
+        
+        showNotifyHTML(`تم تحويل <img src="https://i.ibb.co/N6GXqGpk/Money.png" style="width:16px; vertical-align:middle;"> ${cost} إلى <img src="https://i.ibb.co/KjKrKK3T/1774202167159.png" style="width:16px; vertical-align:middle;"> ${currentQty}`);
+        
+        modal.style.transform = 'translateY(100px)';
+        overlay.style.opacity = '0';
+        overlay.style.visibility = 'hidden';
+        setTimeout(() => overlay.remove(), 400);
+        
+        if (diamondTraderAvailable) {
+            renderTraderGrid();
         }
-    };
+    }
+};
 }
 
 // ==================== نظام الأحداث اليومية ====================
@@ -2718,6 +4810,9 @@ function applyDoubleCropEffect(cropName, count) {
 }
 
 // ==================== نظام المواسم ====================
+let totalSellProfit = 0;  
+let totalDiamondsCrafted = 0;  
+
 const seasons = [
     { id: 0, name: 'الشتاء', nameEn: 'winter', icon: '❄️' },
     { id: 1, name: 'الربيع', nameEn: 'spring', icon: '🌸' },
@@ -2725,6 +4820,7 @@ const seasons = [
     { id: 3, name: 'الخريف', nameEn: 'autumn', icon: '🍂' }
 ];
 
+// جوائز كل موسم (فضية وذهبية منفصلة تماماً)
 const seasonLevels = {
     winter: {
         silver: [
@@ -2746,7 +4842,7 @@ const seasonLevels = {
             { id: 15, type: 'ticket', amount: 1, img: 'https://i.ibb.co/TDvVfxxb/Teket.png', val: '1' }
         ],
         gold: [
-            { id: 0, type: 'seasonBox', amount: 1, img: 'https://i.ibb.co/1JTt0qw9/Box1.png', val: '1' },
+           { id: 0, type: 'seasonBox', amount: 1, img: 'https://i.ibb.co/1JTt0qw9/Box1.png', val: '1' },
             { id: 1, type: 'diamond', amount: 15, img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', val: '15' },
             { id: 2, type: 'crop', cropName: 'طماطم', amount: 25, img: 'https://i.ibb.co/nMDkNtR0/Tomatoes.png', val: '25' },
             { id: 3, type: 'product', productType: 'chicken', productName: 'بيض', amount: 50, img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', val: '50' },
@@ -2880,6 +4976,7 @@ const seasonLevels = {
     }
 };
 
+// ==================== الحالة العامة للموسم ====================
 let goldTickets = 50;
 let currentSeasonIndex = 0;
 let seasonStartTime = null;
@@ -2890,14 +4987,14 @@ let currentSeasonData = null;
 let collectedSilver = {};
 let collectedGold = {};
 let goldTicketPurchased = false;
-let currentLevelSeason = 1;
+let currentLevelSeason = 1;      // يبدأ من المستوى 1 (المستوى 0 هو البداية بدون XP)
 let currentLevelXPSeason = 0;
 let allLevelsCompletedSeason = false;
 let accumulatedBoxes = 0;
 let extraXP = 0;
 
-const XP_PER_LEVEL = 5000;
-const XP_PER_BOX = 10000;
+const XP_PER_LEVEL = 5000;        // 5000 XP لكل مستوى
+const XP_PER_BOX = 10000;         // 10000 XP لكل صندوق بعد إكمال المستويات
 
 function updateGoldTicketsDisplay() {
     const ticketCount = document.getElementById('goldTicketCount');
@@ -2952,6 +5049,7 @@ function startNewSeason(seasonIndex) {
     const season = seasons[seasonIndex];
     currentSeasonData = seasonLevels[season.nameEn];
     
+    // إعادة تعيين بيانات الموسم (التذاكر الذهبية لا تُفقد)
     collectedSilver = {};
     collectedGold = {};
     goldTicketPurchased = false;
@@ -3037,6 +5135,7 @@ function updateXPDisplaySeason() {
     let percent, xpText;
     
     if (allLevelsCompletedSeason || currentLevelSeason > 16) {
+        // بعد إكمال جميع المستويات، كل 10000 XP = صندوق
         percent = (extraXP % XP_PER_BOX) / (XP_PER_BOX / 100);
         xpText = `${extraXP % XP_PER_BOX}/${XP_PER_BOX}`;
         document.getElementById('progressText').innerHTML = xpText;
@@ -3047,6 +5146,7 @@ function updateXPDisplaySeason() {
         if (btnFill) btnFill.style.width = percent + '%';
         if (btnXP) btnXP.innerHTML = `${extraXP % XP_PER_BOX}/${XP_PER_BOX} XP`;
     } else {
+        // المستوى الحالي: 5000 XP لكل مستوى
         percent = (currentLevelXPSeason / XP_PER_LEVEL) * 100;
         xpText = `${currentLevelXPSeason}/${XP_PER_LEVEL}`;
         document.getElementById('progressText').innerHTML = xpText;
@@ -3063,21 +5163,30 @@ function addSeasonXP(amount) {
     if (!allLevelsCompletedSeason && currentLevelSeason <= 16) {
         let newXP = currentLevelXPSeason + amount;
         
+        // حلقة لمعالجة تخطي عدة مستويات دفعة واحدة
         while (newXP >= XP_PER_LEVEL && currentLevelSeason < 16) {
+            // تخطي المستوى الحالي
             newXP -= XP_PER_LEVEL;
             currentLevelSeason++;
+            
+            // فتح الجوائز للمستوى الذي تم تخطيه
             const completedLevel = currentLevelSeason - 1;
             unlockRewardsForLevelSeason(completedLevel);
             showNotify(`🎉 انتقلت إلى المستوى ${completedLevel} في الموسم! 🎉`);
         }
         
+        // بعد الحلقة، إذا وصلنا للمستوى 16 وما زال هناك XP
         if (currentLevelSeason >= 16 && newXP >= XP_PER_LEVEL) {
+            // إكمال المستوى الأخير
             currentLevelSeason = 16;
             newXP = 0;
             allLevelsCompletedSeason = true;
+            
+            // فتح الجائزة الأخيرة
             unlockRewardsForLevelSeason(15);
             showNotify(`🎉 مبروك! أكملت جميع مستويات الموسم! 🎉`);
             
+            // تحويل XP المتبقي إلى صناديق
             let remainingXP = newXP;
             if (remainingXP > 0) {
                 extraXP = remainingXP;
@@ -3096,6 +5205,7 @@ function addSeasonXP(amount) {
         updateSeasonCircle();
         updateBoxCounterDisplaySeason();
     } else {
+        // بعد إكمال جميع المستويات، إضافة XP مباشرة للصناديق
         extraXP += amount;
         let newBoxes = Math.floor(extraXP / XP_PER_BOX);
         if (newBoxes > 0) {
@@ -3123,8 +5233,11 @@ function unlockRewardsForLevelSeason(level) {
 }
 
 function canCollectSilverSeason(level) {
+    // المستوى 0 متاح دائماً
     if (level === 0) return true;
+    // لا يمكن جمع جائزة مستوى لم يتم الوصول إليه بعد
     if (level > currentLevelSeason) return false;
+    // إذا كنا في نفس المستوى، يجب إكمال XP المطلوب
     if (level === currentLevelSeason && currentLevelXPSeason < XP_PER_LEVEL && currentLevelSeason <= 16) return false;
     return true;
 }
@@ -3158,8 +5271,10 @@ function collectSilverSeason(level, rewardData) {
     element.classList.remove('ready');
     element.classList.add('collected');
     
+    // تجميع المكافأة في كائن للإشعار
     let rewards = {};
     
+    // إضافة الجائزة حسب نوعها
     switch(rewardData.type) {
         case 'money':
             money += rewardData.amount;
@@ -3203,6 +5318,7 @@ function collectSilverSeason(level, rewardData) {
             break;
     }
     
+    // إظهار الإشعار الجديد
     showRewardNotification(rewards);
     
     const goldDiv = document.querySelector(`.reward-gold[data-level='${level}']`);
@@ -3235,8 +5351,10 @@ function collectGoldSeason(level, rewardData) {
     element.classList.remove('ready');
     element.classList.add('collected');
     
+    // تجميع المكافأة في كائن للإشعار
     let rewards = {};
     
+    // إضافة الجائزة حسب نوعها
     switch(rewardData.type) {
         case 'money':
             money += rewardData.amount;
@@ -3280,6 +5398,7 @@ function collectGoldSeason(level, rewardData) {
             break;
     }
     
+    // إظهار الإشعار الجديد بدلاً من الإشعار القديم
     showRewardNotification(rewards);
 }
 
@@ -3306,6 +5425,7 @@ function openFinalBoxSeason() {
         return;
     }
     
+    // فتح الصندوق في صفحة منفصلة
     window.open('box1.html', '_blank');
     
     accumulatedBoxes--;
@@ -3345,6 +5465,7 @@ function buildSeason() {
         const isSilverCollected = collectedSilver[index] === true;
         const isGoldCollected = collectedGold[index] === true;
         
+        // المستوى 0 متاح دائماً، باقي المستويات تحتاج إلى إكمال المستوى السابق
         let isLevelUnlocked = false;
         if (index === 0) {
             isLevelUnlocked = true;
@@ -3501,14 +5622,38 @@ function buildSeason() {
     new ResizeObserver(() => updateLineHeight()).observe(container);
 }
 
+// بدء الموسم الأول (الشتاء)
 startNewSeason(0);
 
+// ==================== ربط أزرار البيع ====================
+document.addEventListener('DOMContentLoaded', function() {
+    const sellDecrease = document.getElementById('sellDecreaseQty');
+    const sellIncrease = document.getElementById('sellIncreaseQty');
+    const sellMax = document.getElementById('sellMaxQty');
+    const sellConfirm = document.getElementById('sellConfirmBtn');
+    
+    if (sellDecrease) sellDecrease.onclick = () => changeSellQty(-1);
+    if (sellIncrease) sellIncrease.onclick = () => changeSellQty(1);
+    if (sellMax) sellMax.onclick = () => setSellMaxQty();
+    if (sellConfirm) sellConfirm.onclick = () => confirmSell();
+    
+    const traderDecrease = document.getElementById('traderDecreaseQty');
+    const traderIncrease = document.getElementById('traderIncreaseQty');
+    const traderMax = document.getElementById('traderMaxQty');
+    const traderConfirm = document.getElementById('traderSellConfirmBtn');
+    
+    if (traderDecrease) traderDecrease.onclick = () => changeTraderSellQty(-1);
+    if (traderIncrease) traderIncrease.onclick = () => changeTraderSellQty(1);
+    if (traderMax) traderMax.onclick = () => setTraderSellMaxQty();
+    if (traderConfirm) traderConfirm.onclick = () => confirmTraderSell();
+});
 function showRewardNotification(rewards) {
     const notification = document.createElement('div');
     notification.className = 'task-reward-notification';
     
     let rewardHtml = '';
     
+    // تجميع المكافآت
     if (rewards.money && rewards.money > 0) {
         rewardHtml += `
             <div class="reward-float-item">
@@ -3585,32 +5730,588 @@ function showRewardNotification(rewards) {
     }, 2500);
 }
 
-// ربط أزرار البيع
-document.addEventListener('DOMContentLoaded', function() {
-    const sellDecrease = document.getElementById('sellDecreaseQty');
-    const sellIncrease = document.getElementById('sellIncreaseQty');
-    const sellMax = document.getElementById('sellMaxQty');
-    const sellConfirm = document.getElementById('sellConfirmBtn');
-    
-    if (sellDecrease) sellDecrease.onclick = () => changeSellQty(-1);
-    if (sellIncrease) sellIncrease.onclick = () => changeSellQty(1);
-    if (sellMax) sellMax.onclick = () => setSellMaxQty();
-    if (sellConfirm) sellConfirm.onclick = () => confirmSell();
-    
-    const traderDecrease = document.getElementById('traderDecreaseQty');
-    const traderIncrease = document.getElementById('traderIncreaseQty');
-    const traderMax = document.getElementById('traderMaxQty');
-    const traderConfirm = document.getElementById('traderSellConfirmBtn');
-    
-    if (traderDecrease) traderDecrease.onclick = () => changeTraderSellQty(-1);
-    if (traderIncrease) traderIncrease.onclick = () => changeTraderSellQty(1);
-    if (traderMax) traderMax.onclick = () => setTraderSellMaxQty();
-    if (traderConfirm) traderConfirm.onclick = () => confirmTraderSell();
-});
-
-// بدء اللعبة
+// ==================== بدء اللعبة ====================
 updateUI();
 initTrader();
 updateAbilitiesDisplay();
 selectRandomEvent();
-اخر تعديلاتي
+
++
+Box
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>صندوق الموسم</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(145deg, #0084ff, #0066cc);
+            overflow: hidden;
+            font-family: 'Cairo', sans-serif;
+            position: relative;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* تأثير الأشعة خلف الصندوق */
+        .sun-background {
+            position: absolute;
+            width: 200vh; height: 200vh;
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 255, 255, 0.15) 0deg 15deg,
+                transparent 15deg 30deg
+            );
+            animation: rotate 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes rotate { to { transform: rotate(360deg); } }
+
+        /* طبقة الفلاش الأبيض */
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s ease;
+        }
+        .flash.active { opacity: 1; }
+
+        /* زر الاحتمالات */
+        .probabilities-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #c49a7c;
+            border: 4px solid #4e3421;
+            border-radius: 25px;
+            padding: 8px 18px;
+            cursor: pointer;
+            z-index: 15;
+            box-shadow: 0 4px 0 #4e3421;
+            transition: all 0.1s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .probabilities-btn.hidden {
+            display: none;
+        }
+
+        .probabilities-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #4e3421;
+        }
+
+        .probabilities-btn span {
+            font-size: 14px;
+            font-weight: bold;
+            color: #4e3421;
+        }
+
+        /* نافذة الاحتمالات */
+        .probabilities-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .probabilities-overlay.active { opacity: 1; visibility: visible; }
+
+        .probabilities-card {
+            width: 92%;
+            max-width: 400px;
+            background-color: #c49a7c;
+            border: 6px solid #4e3421;
+            border-radius: 25px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .probabilities-overlay.active .probabilities-card { transform: scale(1); }
+
+        .modal-header { text-align: center; margin-bottom: 15px; }
+        .modal-title { font-size: 24px; font-weight: 900; color: #4e3421; margin-bottom: 5px; }
+        
+        .modal-subtitle {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; font-size: 18px; color: #fff;
+            background: #4e3421; padding: 5px 15px; border-radius: 20px;
+        }
+        .modal-subtitle img { width: 30px; height: 30px; }
+
+        /* شبكة الجوائز */
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .reward-item {
+            background: #a67c52;
+            border: 3px solid #4e3421;
+            border-radius: 15px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .reward-icon-container {
+            background: #4e3421;
+            border-radius: 10px;
+            width: 55px; height: 55px;
+            display: flex; justify-content: center; align-items: center;
+            flex-shrink: 0;
+        }
+        .reward-icon-container img { width: 40px; height: 40px; object-fit: contain; }
+
+        .reward-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .reward-name { font-size: 14px; font-weight: bold; color: #fff; }
+        .reward-qty { font-size: 12px; color: #ffe0b3; font-weight: bold; }
+        .reward-chance { font-size: 13px; font-weight: bold; color: #ffd700; }
+
+        .game-wrapper {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        /* الصندوق */
+        .box-img {
+            width: 180px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: float 2.5s ease-in-out infinite;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .box-img:active {
+            transform: scale(0.9);
+            animation: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* الجائزة - بدون بوردات */
+        .prize {
+            position: absolute;
+            top: 60%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 250px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+            background: transparent;
+        }
+
+        .prize-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            animation: prizePop 0.5s ease-out;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+
+        @keyframes prizePop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .prize-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .prize-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* عند الفتح */
+        .opened .box-img { 
+            transform: scale(0); 
+            opacity: 0; 
+            pointer-events: none; 
+            animation: none;
+        }
+        .opened .prize { 
+            transform: translate(-50%, -50%) scale(1); 
+            opacity: 1; 
+        }
+        .opened .instruction { 
+            opacity: 0; 
+        }
+
+      .instruction {
+    color: white;
+    font-weight: bold;
+    margin-top: 30px;
+    font-size: 18px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    display: inline-block;
+    pointer-events: none;
+    animation: pulse 1.2s ease-in-out infinite;
+    position: relative;
+    top: 100px;  /* غيّر هذه القيمة لتحريك النص فقط */
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+}
+        /* طبقة العودة */
+        .return-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 25;
+            display: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sun-background"></div>
+    
+    <!-- طبقة الفلاش الأبيض -->
+    <div class="flash" id="flash"></div>
+
+    <!-- طبقة العودة (تظهر بعد فتح الصندوق) -->
+    <div class="return-layer" id="returnLayer" onclick="closeWindow()"></div>
+
+    <!-- زر الاحتمالات -->
+    <div class="probabilities-btn" id="probabilitiesBtn">
+        <span>الاحتمالات</span>
+    </div>
+
+    <!-- نافذة الاحتمالات -->
+    <div id="probabilitiesOverlay" class="probabilities-overlay" onclick="closeProbabilities()">
+        <div class="probabilities-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">نسب الجوائز</div>
+                <div class="modal-subtitle">
+                    <img src="https://i.ibb.co/1JTt0qw9/Box1.png" alt="صندوق">
+                    <span>الصندوق الموسمي</span>
+                </div>
+            </div>
+            
+            <!-- شبكة الجوائز -->
+            <div class="rewards-grid" id="rewardsGrid"></div>
+        </div>
+    </div>
+
+    <div class="game-wrapper" id="game">
+        <img src="https://i.ibb.co/1JTt0qw9/Box1.png" class="box-img" id="boxImg">
+        
+        <div class="prize" id="prize">
+            <img id="prizeImg" class="prize-img" src="">
+            <div class="prize-name" id="prizeName"></div>
+            <div class="prize-amount" id="prizeAmount"></div>
+        </div>
+
+        <div class="instruction">اضغط لفتح الصندوق</div>
+    </div>
+
+    <script>
+        // تعريف الفئات الرئيسية للجوائز (6 فئات)
+        const rewardsList = [
+            { name: 'أموال', img: 'https://i.ibb.co/N6GXqGpk/Money.png', qty: '250 - 1000', percent: '30%' },
+            { name: 'ألماس', img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png', qty: '10 - 50', percent: '10%' },
+            { name: 'محاصيل', img: 'https://i.ibb.co/HTTNdRkP/wheat.png', qty: '5 - 20', percent: '20%' },
+            { name: 'منتجات', img: 'https://i.ibb.co/gbMXS0Yg/Egg.png', qty: '5 - 20', percent: '20%' },
+            { name: 'قدرات', img: 'https://i.ibb.co/your-speed-icon.png', qty: '1 - 3', percent: '15%' },
+            { name: 'تذاكر ذهبية', img: 'https://i.ibb.co/TDvVfxxb/Teket.png', qty: '5', percent: '5%' }
+        ];
+
+        // بناء شبكة الجوائز
+        function buildRewardsGrid() {
+            const grid = document.getElementById('rewardsGrid');
+            grid.innerHTML = '';
+            
+            rewardsList.forEach(reward => {
+                const item = document.createElement('div');
+                item.className = 'reward-item';
+                item.innerHTML = `
+                    <div class="reward-icon-container">
+                        <img src="${reward.img}" alt="${reward.name}">
+                    </div>
+                    <div class="reward-info">
+                        <div class="reward-name">${reward.name}</div>
+                        <div class="reward-qty">${reward.qty}</div>
+                        <div class="reward-chance">${reward.percent}</div>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        // تعريف المحاصيل
+        const crops = [
+            { name: 'قمح', img: 'https://i.ibb.co/HTTNdRkP/wheat.png' },
+            { name: 'ذرة', img: 'https://i.ibb.co/67RPHStB/corn.png' },
+            { name: 'طماطم', img: 'https://i.ibb.co/WpMcRBFD/tomatoes.png' },
+            { name: 'بطاطا', img: 'https://i.ibb.co/wNznZ239/potatoes.png' },
+            { name: 'جزر', img: 'https://i.ibb.co/Ldm1M39x/carrot.png' },
+            { name: 'باذنجان', img: 'https://i.ibb.co/PvVmPj4Q/eggplant.png' },
+            { name: 'فراولة', img: 'https://i.ibb.co/93Vzw8gp/Strawberry.png' },
+            { name: 'عنب', img: 'https://i.ibb.co/wXXGJpd/grapes.png' },
+            { name: 'خيار', img: 'https://i.ibb.co/0jVwdxGT/cucumber.png' },
+            { name: 'بروكلي', img: 'https://i.ibb.co/S4k8BQDT/broccoli.png' },
+            { name: 'فلفل', img: 'https://i.ibb.co/B5bpYf0h/Pepper.png' },
+            { name: 'رمان', img: 'https://i.ibb.co/Pzbd4vMZ/pomegranate.png' },
+            { name: 'مانجو', img: 'https://i.ibb.co/QjfmCPw2/mango.png' },
+            { name: 'بطيخ', img: 'https://i.ibb.co/KYhqzX6/watermelon.png' },
+            { name: 'يقطين', img: 'https://i.ibb.co/RT96VT9g/pumpkin.png' }
+        ];
+
+        // تعريف المنتجات
+        const products = {
+            chicken: { name: 'بيض', img: 'https://i.ibb.co/gbMXS0Yg/Egg.png' },
+            sheep: { name: 'صوف', img: 'https://i.ibb.co/Y4SxJ6SP/1773562765337.png' },
+            cow: { name: 'حليب', img: 'https://i.ibb.co/2YCB7dq0/1773562787884.png' }
+        };
+
+        // تعريف القدرات
+        const abilities = {
+            speed: { name: 'النمو السريع', img: 'https://i.ibb.co/your-speed-icon.png' },
+            double: { name: 'النضج الجيد', img: 'https://i.ibb.co/your-double-icon.png' },
+            instant: { name: 'موسم الحصاد', img: 'https://i.ibb.co/your-instant-icon.png' }
+        };
+
+        // أعداد الجوائز
+        const moneyAmounts = [250, 500, 1000];
+        const diamondAmounts = [10, 20, 50];
+        const cropAmounts = [5, 10, 20];
+        const productAmounts = [5, 10, 15, 20];
+        const abilityAmounts = [1, 2, 3];
+        const ticketAmounts = [5];
+
+        let isOpened = false;
+        let preventClick = false;
+
+        // دوال الاحتمالات
+        const probabilitiesOverlay = document.getElementById('probabilitiesOverlay');
+        const probabilitiesBtn = document.getElementById('probabilitiesBtn');
+
+        function openProbabilities() {
+            probabilitiesOverlay.classList.add('active');
+            preventClick = true;
+        }
+
+        function closeProbabilities() {
+            probabilitiesOverlay.classList.remove('active');
+            setTimeout(() => {
+                preventClick = false;
+            }, 300);
+        }
+
+        probabilitiesBtn.onclick = (e) => {
+            e.stopPropagation();
+            openProbabilities();
+        };
+
+        // دالة اختيار عشوائي حسب الوزن
+        function weightedRandom(weights) {
+            let total = 0;
+            for (let w of weights) total += w;
+            let random = Math.random() * total;
+            let cumulative = 0;
+            for (let i = 0; i < weights.length; i++) {
+                cumulative += weights[i];
+                if (random < cumulative) return i;
+            }
+            return 0;
+        }
+
+        function randomChoice(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // دالة اختيار الجائزة
+        function getRandomReward() {
+            const categories = [
+                { type: 'money', weight: 30 },
+                { type: 'diamond', weight: 10 },
+                { type: 'crop', weight: 20 },
+                { type: 'product', weight: 20 },
+                { type: 'ability', weight: 15 },
+                { type: 'ticket', weight: 5 }
+            ];
+            
+            const categoryIndex = weightedRandom(categories.map(c => c.weight));
+            const category = categories[categoryIndex].type;
+            
+            switch(category) {
+                case 'money':
+                    return {
+                        type: 'money',
+                        amount: randomChoice(moneyAmounts),
+                        img: 'https://i.ibb.co/N6GXqGpk/Money.png',
+                        name: 'عملات'
+                    };
+                case 'diamond':
+                    return {
+                        type: 'diamond',
+                        amount: randomChoice(diamondAmounts),
+                        img: 'https://i.ibb.co/KjKrKK3T/1774202167159.png',
+                        name: 'ألماس'
+                    };
+                case 'crop':
+                    const randomCrop = randomChoice(crops);
+                    return {
+                        type: 'crop',
+                        cropName: randomCrop.name,
+                        amount: randomChoice(cropAmounts),
+                        img: randomCrop.img,
+                        name: randomCrop.name
+                    };
+                case 'product':
+                    const productWeights = [10, 5, 5];
+                    const productTypes = ['chicken', 'sheep', 'cow'];
+                    const productIndex = weightedRandom(productWeights);
+                    const productType = productTypes[productIndex];
+                    const product = products[productType];
+                    return {
+                        type: 'product',
+                        productType: productType,
+                        amount: randomChoice(productAmounts),
+                        img: product.img,
+                        name: product.name
+                    };
+                case 'ability':
+                    const abilityWeights = [10, 3, 2];
+                    const abilityTypes = ['speed', 'double', 'instant'];
+                    const abilityIndex = weightedRandom(abilityWeights);
+                    const abilityType = abilityTypes[abilityIndex];
+                    const ability = abilities[abilityType];
+                    return {
+                        type: 'ability',
+                        abilityType: abilityType,
+                        amount: randomChoice(abilityAmounts),
+                        img: ability.img,
+                        name: ability.name
+                    };
+                case 'ticket':
+                    return {
+                        type: 'ticket',
+                        amount: randomChoice(ticketAmounts),
+                        img: 'https://i.ibb.co/TDvVfxxb/Teket.png',
+                        name: 'تذاكر ذهبية'
+                    };
+                default:
+                    return {
+                        type: 'money',
+                        amount: 250,
+                        img: 'https://i.ibb.co/N6GXqGpk/Money.png',
+                        name: 'عملات'
+                    };
+            }
+        }
+
+        function sendRewardToParent(reward) {
+            localStorage.setItem('boxReward', JSON.stringify(reward));
+            localStorage.setItem('boxRewardTimestamp', Date.now().toString());
+        }
+
+        function displayReward(reward) {
+            const prizeImg = document.getElementById('prizeImg');
+            const prizeName = document.getElementById('prizeName');
+            const prizeAmount = document.getElementById('prizeAmount');
+            
+            prizeImg.src = reward.img;
+            prizeName.textContent = reward.name;
+            prizeAmount.textContent = `+${reward.amount}`;
+        }
+
+        function closeWindow() {
+            window.location.href = 'index.html';
+        }
+
+        function playFlash() {
+            const flash = document.getElementById('flash');
+            flash.classList.add('active');
+            setTimeout(() => {
+                flash.classList.remove('active');
+            }, 150);
+        }
+
+        function openBox() {
+            if (isOpened) return;
+            
+            playFlash();
+            const reward = getRandomReward();
+            
+            setTimeout(() => {
+                displayReward(reward);
+                sendRewardToParent(reward);
+                
+                const gameWrapper = document.getElementById('game');
+                gameWrapper.classList.add('opened');
+                isOpened = true;
+                
+                probabilitiesBtn.classList.add('hidden');
+                
+                const returnLayer = document.getElementById('returnLayer');
+                returnLayer.style.display = 'block';
+            }, 150);
+        }
+
+        // الضغط في أي مكان على الشاشة يفتح الصندوق
+        document.body.onclick = (e) => {
+            if (!probabilitiesOverlay.classList.contains('active') && !isOpened && !preventClick) {
+                openBox();
+            }
+        };
+
+        buildRewardsGrid();
+    </script>
+</body>
+</html>
