@@ -1,90 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Add Hearts</title>
-    <style>
-        @font-face {
-            font-family: 'LocalBubble';
-            src: url('Menu/bubble.ttf') format('truetype');
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Reward</title>
+<style>
+@font-face {
+    font-family: 'LocalBubble';
+    src: url('Menu/bubble.ttf') format('truetype');
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        html, body {
-            width: 100%;
-            height: 100vh;
-            background-color: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            font-family: 'LocalBubble', sans-serif;
-        }
+body {
+    width: 100vw;
+    height: 100vh;
+    background-color: #FFB6C1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'LocalBubble', sans-serif;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
 
-        .container {
-            text-align: center;
-        }
+.container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2vh;
+    padding: 3%;
+    width: 100%;
+    max-width: 500px;
+    max-height: 100vh;
+}
 
-        .add-btn {
-            padding: 20px 40px;
-            font-family: 'LocalBubble', sans-serif;
-            font-size: 2vw;
-            font-weight: bold;
-            color: #FFFFFF;
-            background: linear-gradient(135deg, #FF69B4, #C71585);
-            border: 3px solid #C71585;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+.logo {
+    width: min(40%, 200px);
+    height: auto;
+}
 
-        .add-btn:active {
-            transform: scale(0.9);
-        }
+.subtitle {
+    color: #FFFFFF;
+    font-size: min(5vw, 28px);
+    font-weight: bold;
+    text-shadow: 0.05vw 0.05vw 0.1vw rgba(0,0,0,0.3);
+}
 
-        .message {
-            color: #FFB6C1;
-            font-family: 'LocalBubble', sans-serif;
-            font-size: 1.5vw;
-            margin-top: 20px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
+.reward-amount {
+    color: #C71585;
+    font-size: min(8vw, 40px);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2%;
+}
 
-        .message.show {
-            opacity: 1;
-        }
-    </style>
+.reward-amount img {
+    width: min(6vw, 30px);
+    height: min(6vw, 30px);
+}
+
+.claim-btn {
+    padding: 15px 40px;
+    background-color: #C71585;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 15px;
+    font-family: 'LocalBubble', sans-serif;
+    font-size: min(4vw, 22px);
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.claim-btn:active {
+    transform: scale(0.9);
+    background-color: #FF1493;
+}
+
+.claim-btn.claimed {
+    background-color: #EBAC0C;
+    cursor: default;
+}
+
+.claim-btn.claimed:active {
+    transform: scale(1);
+}
+
+.floating-notification {
+    position: fixed;
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #FFFFFF;
+    font-family: 'LocalBubble', sans-serif;
+    font-size: min(4vw, 24px);
+    font-weight: bold;
+    text-align: center;
+    z-index: 5000;
+    pointer-events: none;
+    white-space: nowrap;
+    text-shadow: 0.1vw 0.1vw 0.15vw #808080;
+    animation: floatUpNotif 2s ease-out forwards;
+}
+
+@keyframes floatUpNotif {
+    0% { transform: translate(-50%, 60%) scale(0.8); opacity: 0; }
+    15% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: translate(-50%, -100%) scale(0.95); opacity: 0; }
+}
+
+@media (orientation: landscape) {
+    .container {
+        gap: 1.5vh;
+    }
+    .logo {
+        width: min(25%, 150px);
+    }
+}
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <button class="add-btn" id="addBtn">Add 50M Hearts</button>
-        <div class="message" id="message">Done! +50M</div>
+<div class="container">
+    <img src="Menu/Logo.png" alt="Logo" class="logo">
+    
+    <div class="subtitle">Enjoy the game</div>
+    
+    <div class="reward-amount">
+        <span>+5,000,000</span>
+        <img src="game/heart.png" alt="Heart">
     </div>
+    
+    <button class="claim-btn" id="claimBtn" onclick="claimReward()">Claim Reward</button>
+</div>
 
-    <script>
-        const addBtn = document.getElementById('addBtn');
-        const message = document.getElementById('message');
+<script>
+const REWARD_AMOUNT = 5000000;
+const REWARD_KEY = 'moc_reward_claimed';
 
-        addBtn.addEventListener('click', function() {
-            const currentHearts = parseInt(localStorage.getItem('moc_count')) || 0;
-            const newTotal = currentHearts + 50000000;
-            localStorage.setItem('moc_count', newTotal);
-            
-            message.classList.add('show');
-            setTimeout(() => {
-                message.classList.remove('show');
-            }, 2000);
-        });
-    </script>
+function claimReward() {
+    const alreadyClaimed = localStorage.getItem(REWARD_KEY);
+    
+    if (alreadyClaimed === 'true') {
+        showNotification('You have already claimed your reward!');
+        return;
+    }
+    
+    const currentHearts = parseInt(localStorage.getItem('moc_count')) || 0;
+    const newTotal = currentHearts + REWARD_AMOUNT;
+    localStorage.setItem('moc_count', newTotal);
+    
+    localStorage.setItem(REWARD_KEY, 'true');
+    
+    const btn = document.getElementById('claimBtn');
+    btn.textContent = 'Reward Claimed!';
+    btn.classList.add('claimed');
+    btn.onclick = null;
+    
+    showNotification('+5,000,000 Hearts Added!');
+}
+
+function showNotification(message) {
+    const notif = document.createElement('div');
+    notif.className = 'floating-notification';
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(() => { notif.remove(); }, 2000);
+}
+
+const alreadyClaimed = localStorage.getItem(REWARD_KEY);
+if (alreadyClaimed === 'true') {
+    const btn = document.getElementById('claimBtn');
+    btn.textContent = 'Reward Claimed!';
+    btn.classList.add('claimed');
+    btn.onclick = null;
+}
+</script>
 </body>
 </html>
